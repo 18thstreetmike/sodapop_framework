@@ -4,6 +4,8 @@ class Sodapop_Application {
     
     private $config = array();
     private $routes = array();
+    private $connections = array();
+    private $table_definitions = array();
     private static $application = null;
     
     /**
@@ -23,9 +25,26 @@ class Sodapop_Application {
      */
     public function run() {
 	apc_clear_cache();
+	// load the config
 	$this->loadConfig();
+	
+	// connect to the database
+	if (isset($this->config['db_name'])) {
+	    $db_config = array();
+	    if (isset($this->config['db_config'])) {
+		$db_config = $this->config['db_config'];
+	    }
+	    $this->connectToDatabase('default', $this->config['db_driver'], $this->config['db_host'], $this->config['db_port'], $this->config['db_user'], $this->config['db_password'], $this->config['db_name'], $db_config);
+	}
+	
+	// get the view class
+	$view_class = $this->getViewClass();
+	
+	// figure out where the user is trying to go
 	$route = $this->getRoute();
-	var_dump($route);
+	
+	// load the controller action
+	$this->loadControllerAction($route['controller'], $route['action'], new Sodapop_Request($route['request']), new $view_class, isset($this->config['base_url']) ? $this->config['base_url'] : '/');
     }
     
     /**
@@ -40,33 +59,64 @@ class Sodapop_Application {
     
     public function loadControllerAction($controller, $action, $request, $view, $baseUrl) {
         try {
-            include_once('../controllers/' . $controller . '.php');
-            if (!class_exists($controller) || !method_exists($controller, $action)) {
+	    $controller_name = ucfirst($controller).'Controller';;
+	    $action_name = 'action'.ucfirst($action);
+	    include_once('../controllers/' . $controller_name . '.php');
+            if (!class_exists($controller_name) || !method_exists($controller_name, $action_name)) {
 		// try first to get the 404 action of the IndexController
-		if ($controller == 'IndexContoller') {
+		if ($controller_name == 'IndexContoller') {
 		    require_once('404.html');
 		} else {
-		    loadControllerAction('IndexController', 'action404', $request, $view, $baseUrl);
+		    $this->loadControllerAction('index', '404', $request, $view, $baseUrl);
 		}
                 exit;
             }
-            $controllerObj = new $controllerName($this, $request, $view);
+            $controllerObj = new $controller_name($request, $view);
             $controllerObj->controller = $controller;
             $controllerObj->action = $action;
-            $controllerObj->setViewPath($controller . '/' . $action);
+	    $controllerObj->setViewPath($this->config['view_path'].'/'.$controller . '/' . $action);
+	    if ($this->config['use_layouts']) {
+		$controllerObj->setLayoutPath($this->config['layout_path']);
+	    }
             $controllerObj->view->baseUrl = $baseUrl;
             $controllerObj->preDispatch();
-            $controllerObj->$action();
+            $controllerObj->$action_name();
             $controllerObj->preDispatch();
             $output = $controllerObj->render();
             $controllerObj->cleanup();
             echo $output;
         } catch (Exception $e) {
-            loadControllerAction('IndexController', 'action500', $request, $view, $baseUrl);
+            loadControllerAction('index', '500', $request, $view, $baseUrl);
         }
         exit();
     }
     
+    public function getTableDefinitions($connection_identifier) {
+	if (isset($this->table_definitions[$connection_identifier])) {
+	    return $this->table_definitions[$connection_identifier];
+	} else {
+	    return array();
+	}
+    }
+    
+    public function defineTableClass($table_name, $class_name) {
+	foreach ($this->table_definitions as $connection_identifier => $tables) {
+	    foreach($tables as $db_table_name => $table_definition){
+		if ($db_table_name == $table_name) {
+		    $this->connections[$connection_identifier]->defineTableClass($table_name, $class_name, $table_definition);
+		    return;
+		}
+	    }
+	} 
+    }
+    
+    public function getConnection($connection_identifier = 'default') {
+	if (isset($this->connections[$connection_identifier])) {
+	    return $this->connections[$connection_identifier];
+	} else {
+	    return null;
+	}
+    }
     
     private function getRoute() {
 	$request_parts = explode('/', strpos($_SERVER["REQUEST_URI"], '?') === false ? $_SERVER["REQUEST_URI"] : substr($_SERVER["REQUEST_URI"], 0, strpos($_SERVER["REQUEST_URI"], '?')));
@@ -86,14 +136,14 @@ class Sodapop_Application {
 			$request[$data['request'][$i]] = $matches[$i + 1][0];
 		    }
 		}
-		$controller_name = ucfirst(strtolower($data['controller'])).'Controller';
+		$controller_name = $data['controller'];
 		if (is_numeric(substr($controller_name, 0 ,1))) {
-		    $controller_name = 'N'.$controller_name;
+		    $controller_name = 'n'.$controller_name;
 		}
 		return array(
 		  'request' => $request,
 		  'controller' => $controller_name,
-		  'action' => 'action'.ucfirst(strtolower($data['action']))
+		  'action' => $data['action']
 		);
 	    }
 	}
@@ -106,23 +156,23 @@ class Sodapop_Application {
 	if (count($request_parts) == 0 || trim($request_parts[0]) == '') {
 	    return array(
 		'request' => $request,
-		'controller' => 'IndexController',
-		'action' => 'actionIndex'
+		'controller' => 'index',
+		'action' => 'index'
 	    );
 	} else if(count($request_parts) == 1 || trim($request_parts[1]) == '') {
-	    $controller_name = ucfirst(strtolower($request_parts[0])).'Controller';
+	    $controller_name = $request_parts[0];
 	    if (is_numeric(substr($controller_name, 0 ,1))) {
-		$controller_name = 'N'.$controller_name;
+		$controller_name = 'n'.$controller_name;
 	    }
 	    return array(
 		'request' => $request,
 		'controller' => $controller_name,
-		'action' => 'actionIndex'
+		'action' => 'index'
 	    );
 	} else if (count($request_parts) > 1) {
-	    $controller_name = ucfirst(strtolower($request_parts[0])).'Controller';
+	    $controller_name = $request_parts[0];
 	    if (is_numeric(substr($controller_name, 0 ,1))) {
-		$controller_name = 'N'.$controller_name;
+		$controller_name = 'n'.$controller_name;
 	    }
 	    for($i = 2; $i < count($request_parts); $i++) {
 		$request[$request_parts[$i]] = isset($request_parts[$i+1]) ? $request_parts[$i+1] : '';
@@ -131,7 +181,7 @@ class Sodapop_Application {
 	    return array(
 		'request' => $request,
 		'controller' => $controller_name,
-		'action' => 'action'.ucfirst(strtolower($request_parts[1]))
+		'action' => $request_parts[1]
 	    );
 	}
     }
@@ -152,6 +202,25 @@ class Sodapop_Application {
 		foreach ($config['hosts'][strtolower($_SERVER['SERVER_NAME'])] as $key => $value) {
 		    $this->config[$key] = $value;
 		}
+	    }
+	    // add the defaults if they aren't already specified.
+	    if (!isset($this->config['controller_path'])) {
+		$this->config['controller_path'] = '../controllers';
+	    }
+	    if (!isset($this->config['view_path'])) {
+		$this->config['view_path'] = '../views';
+	    }
+	    if (!isset($this->config['use_layouts'])) {
+		$this->config['use_layouts'] = true;
+	    }
+	    if (!isset($this->config['layout_path'])) {
+		$this->config['layout_path'] = '../layouts';
+	    }
+	    if (!isset($this->config['db_driver'])) {
+		$this->config['db_driver'] = 'Sodapop_Database_Pdo';
+	    }
+	    if (!isset($this->config['db_config'])) {
+		$this->config['db_config'] = array('server' => 'mysql');
 	    }
 	    if (getenv('USE_CACHE') && function_exists('apc_store')) {
 		apc_store('sodapop_config', $this->config);
@@ -199,7 +268,38 @@ class Sodapop_Application {
 	    apc_store('sodapop_routes', $this->routes);
 	}
     }
+    private function getViewClass() {
+	if (isset($this->config['view_class'])) {
+	    if (class_exists($this->config['view_class'])) {
+		$class_name = $this->config['view_class'];
+		$temp = new $class_name;
+		if (!is_subclass_of($temp, 'Sodapop_View_Abstract')) {
+		    exit('Error: View class '.$class_name.' is not a subclass of Sodapop_View_Abstract.');
+		} 
+		return $class_name; 
+	    } else {
+		exit('Error: View class '.$this->config['view_class'].' does not exist.');
+	    }
+	} else {
+	    return 'Sodapop_View_Simple';
+	}
+    }
     
+    private function connectToDatabase($connection_identifier, $driver_class, $hostname, $port, $user, $password, $database_name, $db_config) {
+	try {
+	    $this->connections[$connection_identifier] = $driver_class::connect($hostname, $port, $user, $password, $database_name, $db_config, $connection_identifier);
+	    if (getenv('USE_CACHE') && function_exists('apc_exists') && apc_exists('table_definitions_'.$connection_identifier)) {
+		$this->table_definitions[$connection_identifier] = apc_fetch('table_info_'.$connection_identifier);
+	    } else {
+		$this->table_definitions[$connection_identifier] = $this->connections[$connection_identifier]->getTableDefinitions();
+		if (getenv('USE_CACHE') && function_exists('apc_store')) {
+		    apc_store('table_definitions_'.$connection_identifier, $this->table_definitions);
+		}
+	    }
+	} catch (Exception $e) {
+	    exit('Error: '.$e->getMessage());
+	}
+    }
 }
 
 /**
@@ -208,51 +308,18 @@ class Sodapop_Application {
  * @param string $className
  */
 function __autoload($className) {
-    global $application;
+    $application = Sodapop_Application::getInstance();
     $classNameParts = explode('_', $className);
     include_once(implode('/', $classNameParts) . '.php');
     include_once($className . '.php');
-    if (!is_null($application)) {
-        include_once($application->config['controller.directory'] . '/' . $className . '.php');
-        include_once($application->config['controller.directory'] . '/../models/' . $className . '.php');
-    }
     if (!class_exists($className)) {
-        // test standard controllers
-        switch ($className) {
-            case 'IndexController':
-                createClass('IndexController', 'Standard_Controller_Index');
-                break;
-            case 'AuthenticationController':
-                createClass('AuthenticationController', 'Standard_Controller_Authentication');
-                break;
-        }
-        // these only work if there is a user with a connection in the session
-        if (!class_exists($className)) {
-            // start looking for models in the user's table list, then their form list
-            $modelName = (substr($className, 0, 14) == 'Sodapop_Model_' ? substr($className, 14) : $className);
-            /*
-              if ($_SESSION['user']->hasTablePermission(Sodapop_Inflector::camelCapsToUnderscores($modelName, false), 'SELECT')) {
-              $_SESSION['user']->connection->defineTableClass(Sodapop_Inflector::camelCapsToUnderscores($modelName, false), $className);
-              } else if ($_SESSION['user']->hasFormPermission(Sodapop_Inflector::camelCapsToUnderscores($modelName, false), null, 'VIEW')) {
-              $_SESSION['user']->connection->defineFormClass(Sodapop_Inflector::camelCapsToUnderscores($modelName, false), $className);
-              }
-             */
-            try {
-                if (!is_null($application->connection)) {
-                  $application->connection->defineTableClass($application->config['model.database.schema'],  Sodapop_Inflector::camelCapsToUnderscores($modelName, false), $className);
-                }
-            } catch(Exception $e) {
-                // do nothing   
-            }
-        }
-        if (!class_exists($className)) {
-            // start looking through the available models to see if we need to instantiate a controller
-            if (substr($className, -10) == 'Controller') {
-                if (in_array(Sodapop_Inflector::camelCapsToUnderscores(substr($className, 0, strlen($className) - 10), false), $_SESSION['user']->availableModels)) {
-                    createClass($className, 'Standard_Controller_Model');
-                }
-            }
-        }
+	// start looking for models in the application's table list
+	$modelName = (substr($className, 0, 14) == 'Sodapop_Model_' ? substr($className, 14) : $className);
+	try {
+	    $application->defineTableClass(Sodapop_Inflector::camelCapsToUnderscores($modelName, false), $className);
+	} catch(Exception $e) {
+	    // do nothing   
+	}
     }
 }
 

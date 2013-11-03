@@ -18,7 +18,9 @@ class Sodapop_Controller {
 
 	protected $viewPath = 'index/index';
 
-	protected $layoutPath = 'layout';
+	protected $layoutPath = null;
+	
+	protected $layoutFile = 'layout';
 
 	public function __construct($request, $view) {
 		$this->request = $request;
@@ -45,78 +47,48 @@ class Sodapop_Controller {
 		$this->view->controller = $this->controller;
 		$this->view->action = $this->action;
 		$this->view->request = $this->request;
-		$this->view->viewFile = '/'.$this->viewPath;
-		$this->view->layoutFile = '/../layouts/'.$this->layoutPath;
-		return $this->view->render($this->mimeType);
+		$this->view->viewFile = $this->viewPath;
+		if (!is_null($this->layoutPath)) {
+		    $this->view->layoutFile = $this->layoutPath.'/'.$this->layoutFile;
+		}
+		return $this->view->render();
 	}
 
 	public function cleanup() {
 
 	}
 
+	/**
+	 * Forwards execution to the specified controller and action.
+	 * @param type $controller
+	 * @param type $action
+	 */
 	public function forward($controller, $action) {
 		Sodapop_Application::getInstance()->loadControllerAction($controller, $action, $this->request, $this->view, $this->view->baseUrl);
 	}
 
+	/**
+	 * Redirects the user to the specified location
+	 * 
+	 * @param string $url: The URL to redirect to
+	 */
 	public function redirect($url) {
 		header('Location: '.$url);
 		exit;
 	}
-
-	protected function buildTabsFromPermissions($tabGroup) {
-		$tabs = array();
-		if (is_array($tabGroup)) {
-			foreach ($tabGroup as $navigationTab) {
-				if (isset($navigationTab['model'])) {
-					if ($this->application->user->hasModelViewPermission($navigationTab['model'])) {
-						$tab = new stdClass();
-						$tab->id = $navigationTab['id'];
-						$tab->label = $navigationTab['label'];
-						$tab->url = $navigationTab['url'];
-						$tabs[] = $tab;
-					}
-				} else if (isset($navigationTab['permission'])) {
-					$permissions = explode(',', $navigationTab['permission']);
-					foreach ($permissions as $permission) {
-						if ($this->application->user->hasPermission($permission)) {
-							$tab = new stdClass();
-							$tab->id = $navigationTab['id'];
-							$tab->label = $navigationTab['label'];
-							$tab->url = $navigationTab['url'];
-							$tabs[] = $tab;
-						}
-					}
-				} else if (isset($navigationTab['application_permission'])) {
-					$permissions = explode(',', $navigationTab['application_permission']);
-					foreach ($permissions as $permission) {
-						if ($this->application->user->hasApplicationPermission($permission)) {
-							$tab = new stdClass();
-							$tab->id = $navigationTab['id'];
-							$tab->label = $navigationTab['label'];
-							$tab->url = $navigationTab['url'];
-							$tabs[] = $tab;
-						}
-					}
-				} else if (isset($navigationTab['server_permission'])) {
-					$permissions = explode(',', $navigationTab['server_permission']);
-					foreach ($permissions as $permission) {
-						if ($this->application->user->hasServerPermission($permission)) {
-							$tab = new stdClass();
-							$tab->id = $navigationTab['id'];
-							$tab->label = $navigationTab['label'];
-							$tab->url = $navigationTab['url'];
-							$tabs[] = $tab;
-						}
-					}
-				} else {
-					$tab = new stdClass();
-					$tab->id = $navigationTab['id'];
-					$tab->label = $navigationTab['label'];
-					$tab->url = $navigationTab['url'];
-					$tabs[] = $tab;
-				}
-			}
-		}
-		return $tabs;
+	
+	/**
+	 * A default for the 404 handler
+	 */
+	public function action404(){
+	    
 	}
+	
+	/**
+	 * A default for the 500 handler
+	 */
+	public function action500() {
+	    
+	}
+
 }
