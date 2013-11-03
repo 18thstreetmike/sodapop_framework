@@ -45,7 +45,7 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
 	    $stmt->bindParam(':'.$key, $value);
         }
         try {
-            $stmt->execute();
+	    $stmt->execute();
 	    return $this->resultsetToArray($stmt);
         } catch (Exception $e) {
             throw new Sodapop_Database_Exception($e->getMessage(), 3);

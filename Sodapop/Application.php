@@ -62,7 +62,7 @@ class Sodapop_Application {
 	    $controller_name = ucfirst($controller).'Controller';;
 	    $action_name = 'action'.ucfirst($action);
 	    include_once('../controllers/' . $controller_name . '.php');
-            if (!class_exists($controller_name) || !method_exists($controller_name, $action_name)) {
+	    if (!class_exists($controller_name) || !method_exists($controller_name, $action_name)) {
 		// try first to get the 404 action of the IndexController
 		if ($controller_name == 'IndexContoller') {
 		    require_once('404.html');

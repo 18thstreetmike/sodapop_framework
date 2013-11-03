@@ -7,9 +7,7 @@ class Sodapop_Request {
     private $headers = null;
     
     public function __construct($additional_values = null) {
-	if (isset($_POST)) {
-	    $this->method = 'post';
-	}
+	$this->method = strtolower($_SERVER['REQUEST_METHOD']);
 	foreach($_REQUEST as $key => $val) {
 	    $this->values[$key] = $val;
 	}
@@ -34,12 +32,15 @@ class Sodapop_Request {
     public function isGet() {
 	return $this->method == 'get';
     }
-    public function get($value) {
+    public function __get($value) {
 	if (isset($this->values[$value])) {
 	    return $this->values[$value];
 	} else {
 	    return null;
 	}
+    }
+    public function exists($value) {
+	return isset($this->values[$value]);
     }
     public function getFile($value) {
 	if (isset($this->files[$value])) {
