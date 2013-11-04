@@ -15,7 +15,9 @@ abstract class Sodapop_Database_Abstract {
      * @param string $schema
      * @param string $environment
      */
-    public static abstract function connect($hostname, $port, $username, $password, $database, $config = array(), $connection_identifier = 'default');
+    public static function connect($hostname, $port, $username, $password, $database, $config = array(), $connection_identifier = 'default') {
+	return;
+    }
     
     /**
      * This function returns the schema name for this connection.

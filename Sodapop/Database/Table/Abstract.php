@@ -15,12 +15,31 @@ abstract class Sodapop_Database_Table_Abstract {
     protected $lazyLoaded = false;
 
     public function __construct($id = null) {
-        $this->id = $id;
+        if (!is_null($id)) {
+	    if (is_array($id)) {
+		foreach($id as $key => $value) {
+		    $this->$key = $value;
+		}
+	    } else {
+		if (count($this->primaryKey) == 1) {
+		    $keyname = $this->primaryKey[0];
+		    $this->$keyname = $id;
+		}
+	    }
+	}
     }
 
     public function __get($name) {
-        if (!$this->lazyLoaded && $this->id) {
-            $this->loadData();
+        if (!$this->lazyLoaded) {
+	    $canLookup = true;
+	    foreach($this->primaryKey as $key => $value) {
+		if (is_null($this->$key)) {
+		    $canLookup = false;
+		}
+	    }
+	    if ($canLookup) {
+		$this->loadData();
+	    }
         }
         if (array_key_exists($name, $this->fieldDefinitions) && isset($this->fields[$name])) {
             // this is a regular field
@@ -31,12 +50,20 @@ abstract class Sodapop_Database_Table_Abstract {
     }
 
     public function __set($name, $value) {
-        if (!$this->lazyLoaded && $this->id) {
-            $this->loadData();
+        if (!$this->lazyLoaded) {
+	    $canLookup = true;
+	    foreach($this->primaryKey as $key => $value) {
+		if (is_null($this->$key)) {
+		    $canLookup = false;
+		}
+	    }
+	    if ($canLookup) {
+		$this->loadData();
+	    }
         }
-        if (array_key_exists($name, $this->fieldDefinitions) && isset($this->fields[$name])) {
+        if (array_key_exists($name, $this->fieldDefinitions)) {
             $this->fields[$name] = $value;
-	}
+	} 
 	return $this;
     }
 
@@ -77,4 +104,7 @@ abstract class Sodapop_Database_Table_Abstract {
         return $this->childTableDefinitions;
     }
 
+    public function asArray() {
+	return $this->fields;
+    }
 }

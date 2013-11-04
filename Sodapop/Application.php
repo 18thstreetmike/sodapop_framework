@@ -58,7 +58,8 @@ class Sodapop_Application {
     
     
     public function loadControllerAction($controller, $action, $request, $view, $baseUrl) {
-        try {
+        // echo $controller."_".$action;
+	try {
 	    $controller_name = ucfirst($controller).'Controller';;
 	    $action_name = 'action'.ucfirst($action);
 	    include_once('../controllers/' . $controller_name . '.php');
@@ -81,7 +82,7 @@ class Sodapop_Application {
             $controllerObj->view->baseUrl = $baseUrl;
             $controllerObj->preDispatch();
             $controllerObj->$action_name();
-            $controllerObj->preDispatch();
+            $controllerObj->postDispatch();
             $output = $controllerObj->render();
             $controllerObj->cleanup();
             echo $output;

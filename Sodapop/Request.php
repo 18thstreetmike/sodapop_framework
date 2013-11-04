@@ -73,4 +73,7 @@ class Sodapop_Request {
 	    return null;
 	}
     }
+    public function asArray() {
+	return $this->values;
+    }
 }

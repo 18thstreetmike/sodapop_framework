@@ -21,6 +21,8 @@ class Sodapop_Controller {
 	protected $layoutPath = null;
 	
 	protected $layoutFile = 'layout';
+	
+	protected $already_rendered = false;
 
 	public function __construct($request, $view) {
 		$this->request = $request;
@@ -43,7 +45,9 @@ class Sodapop_Controller {
 
 	}
 
-	public function render () {
+	public function render ($text = null) {
+	    if (!is_null($this->viewPath) && !$this->already_rendered && is_null($text)) {
+		$this->already_rendered = true;
 		$this->view->controller = $this->controller;
 		$this->view->action = $this->action;
 		$this->view->request = $this->request;
@@ -52,6 +56,12 @@ class Sodapop_Controller {
 		    $this->view->layoutFile = $this->layoutPath.'/'.$this->layoutFile;
 		}
 		return $this->view->render();
+	    } else if(!$this->already_rendered && !is_null($text)) {
+		$this->already_rendered = true;
+		echo $text;
+	    } else {
+		return "";
+	    }
 	}
 
 	public function cleanup() {
@@ -75,6 +85,16 @@ class Sodapop_Controller {
 	public function redirect($url) {
 		header('Location: '.$url);
 		exit;
+	}
+	
+	/**
+	 * Sets an HTTP header
+	 * 
+	 * @param type $name: the name of the header
+	 * @param type $value: the value
+	 */
+	public function setHeader($name, $value){
+	    header($name.": ".$value);
 	}
 	
 	/**
