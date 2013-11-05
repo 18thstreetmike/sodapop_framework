@@ -42,7 +42,7 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
     public function runParameterizedQuery($query, $params) {
 	$stmt = $this->connection->prepare($query);
 	foreach ($params as $key => $value) {
-	    $stmt->bindParam(':'.$key, $value);
+	    $stmt->bindValue(':'.$key, $value);
         }
         try {
 	    $stmt->execute();
@@ -53,14 +53,14 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
     }
 
     public function runParameterizedUpdate($statement, $params) {
-        $stmt = $this->connection->prepare($statement);
+	$stmt = $this->connection->prepare($statement);
 	foreach ($params as $key => $value) {
-	    $stmt->bindParam(':'.$key, $value);
+	    $stmt->bindValue(':'.$key, $value);
         }
         try {
-            $stmt->execute();
-        } catch (Exception $e) {
-            throw new Sodapop_Database_Exception($e->getMessage(), 3);
+	    $stmt->execute();
+	} catch (Exception $e) {
+	    throw new Sodapop_Database_Exception($e->getMessage(), 3);
         }
     }
 
@@ -97,14 +97,16 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
             $columnString .= ")";
         }
         $columnString .= ');';
+	// sanitize the tablename
+	$table_name = preg_replace("/[^a-zA-Z0-9_]+/i", "", $table_name);
         $overriddenFunctions = '
-                        protected $tableName = \''.addslashes($tableName).'\';
+                        protected $tableName = \''.addslashes($table_name).'\';
 
 			public function loadData() {
 			    if($this->isPrimaryKeySet()) {
-				$result = Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runQuery("SELECT * FROM ' . $tableName . ' WHERE ".$this->getPrimaryKeyWhereClause());
+				$result = Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runQuery("SELECT * FROM ".$this->tableName." WHERE ".$this->getPrimaryKeyWhereClause());
                                 if (count($result) > 0) {
-				    for($i = 0; $i < count($results); $i++) {
+				    for($i = 0; $i < count($result); $i++) {
 					foreach ($result[$i] as $key => $value) {
 					    $this->fields[Sodapop_Inflector::underscoresToCamelCaps($key, true, false)] = $value;
 					    $this->oldFields[Sodapop_Inflector::underscoresToCamelCaps($key, true, false)] = $value;
@@ -117,31 +119,29 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
 			
 			protected function save($action = \'UPDATE\') {
 				if (strtoupper($action) == \'DELETE\' && $this->isPrimaryKeySet()) {
-					Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runQuery("DELETE FROM ' . $tableName . ' WHERE ".$this->getPrimaryKeyWhereClause());
+					Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runQuery("DELETE FROM ".$this->tableName." WHERE ".$this->getPrimaryKeyWhereClause());
 				} else {
 					$setClause = \'\';
 					foreach($this->fields as $fieldName => $newValue) {
-						if (!isset($this->oldFields[$fieldName]) || $newValue != $this->oldFields[$fieldName]) {
-							if ($setClause != \'\') {
-								$setClause .= \',\';
-							}
-                                                        if (is_null($newValue) || $newValue === "null") {
-                                                            $setClause .= Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = null ";
-                                                        } else {
-                                                            $setClause .= Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = \':{".$fieldName."}\'";
-                                                        }
-						}
+					    if ($setClause != \'\') {
+						    $setClause .= \',\';
+					    }
+					    if (is_null($newValue) || $newValue === "null") {
+						$setClause .= Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = null ";
+					    } else {
+						$setClause .= Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = :".$fieldName;
+					    }
 					}
 					if (trim($setClause) != "") {
 						if (strtoupper($action) == \'INSERT\') {
-							$statement = "INSERT INTO ' . strtolower($tableName) . ' SET ".$setClause;
-                                                        echo $statement;
-							$result = Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runParameterizedUpdate($statement, $this->fields);
+							$statement = "INSERT INTO ".$this->tableName." SET ".$setClause;
+                                                        // var_dump($this->fields);
+							Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runParameterizedUpdate($statement, $this->fields);
 							if (count($this->primaryKey) == 1) {
 							    $this->fields[$this->primaryKey[0]] = mysql_insert_id();
 							}
 						} else if (strtoupper($action) == \'UPDATE\') {
-                                                        Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runParameterizedUpdate("UPDATE ' . strtolower($tableName) . ' SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause()." ", $this->fields);
+							Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runParameterizedUpdate("UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause(), $this->fields);
 						}
 						$this->oldFields = $this->fields;
 					}

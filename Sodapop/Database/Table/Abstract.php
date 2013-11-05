@@ -7,7 +7,6 @@
 abstract class Sodapop_Database_Table_Abstract {
 
     protected $tableName = null;
-    public $id = null;
     public $primaryKey = array('id');
     protected $fields = array();
     protected $oldFields = array();
@@ -32,7 +31,7 @@ abstract class Sodapop_Database_Table_Abstract {
     public function __get($name) {
         if (!$this->lazyLoaded) {
 	    $canLookup = true;
-	    foreach($this->primaryKey as $key => $value) {
+	    foreach($this->primaryKey as $key) {
 		if (is_null($this->$key)) {
 		    $canLookup = false;
 		}
@@ -52,7 +51,7 @@ abstract class Sodapop_Database_Table_Abstract {
     public function __set($name, $value) {
         if (!$this->lazyLoaded) {
 	    $canLookup = true;
-	    foreach($this->primaryKey as $key => $value) {
+	    foreach($this->primaryKey as $key) {
 		if (is_null($this->$key)) {
 		    $canLookup = false;
 		}
@@ -104,7 +103,26 @@ abstract class Sodapop_Database_Table_Abstract {
         return $this->childTableDefinitions;
     }
 
-    public function asArray() {
-	return $this->fields;
+    public function asArray($switch_to_underscores = false) {
+	if (!$this->lazyLoaded) {
+	    $canLookup = true;
+	    foreach($this->primaryKey as $temp) {
+		if (is_null($this->$temp)) {
+		    $canLookup = false;
+		}
+	    }
+	    if ($canLookup) {
+		$this->loadData();
+	    }
+        }
+	if ($switch_to_underscores) {
+	    $retval = array();
+	    foreach($this->fields as $field => $value) {
+		$retval[Sodapop_Inflector::camelCapsToUnderscores($field)] = $value;
+	    }
+	    return $retval;
+	} else {
+	    return $this->fields;
+	}
     }
 }
