@@ -28,4 +28,8 @@ class Sodapop_Session {
 	}
 	session_destroy();
     }
+    
+    public static function delete($key) {
+	unset($_SESSION[$key]);
+    }
 }

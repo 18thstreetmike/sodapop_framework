@@ -111,6 +111,14 @@ class Sodapop_Application {
 	} 
     }
     
+    public function getConfig($key) {
+	if (isset($this->config[$key])) {
+	    return $this->config[$key];
+	} else {
+	    return null;
+	}
+    }
+    
     public function getConnection($connection_identifier = 'default') {
 	if (isset($this->connections[$connection_identifier])) {
 	    return $this->connections[$connection_identifier];
@@ -308,7 +316,8 @@ class Sodapop_Application {
  *
  * @param string $className
  */
-function __autoload($className) {
+function sodapop_autoloader($className) {
+        // print "autoloading $className\n";
     $application = Sodapop_Application::getInstance();
     $classNameParts = explode('_', $className);
     include_once(implode('/', $classNameParts) . '.php');
@@ -323,6 +332,8 @@ function __autoload($className) {
 	}
     }
 }
+
+spl_autoload_register('sodapop_autoloader');
 
 function __unserialize($className) {
     __autoload($className);
