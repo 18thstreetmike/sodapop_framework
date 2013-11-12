@@ -24,7 +24,8 @@ class Sodapop_Application {
      * This method is called when the application loads.
      */
     public function run() {
-	apc_clear_cache();
+	$this->clearCache();
+	
 	// load the config
 	$this->loadConfig();
 	
