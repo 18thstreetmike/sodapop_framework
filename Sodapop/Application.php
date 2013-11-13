@@ -1,5 +1,27 @@
 <?php
+/*
+ * Copyright (C) 2013 Michael Arace 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
+/**
+ * Sodapop_Application represents a Sodapop application. 
+ * 
+ * It is a singleton and you can get a reference to it by calling 
+ * Sodapop_Application::getInstance().
+ */
 class Sodapop_Application {
     
     private $config = array();
@@ -21,7 +43,8 @@ class Sodapop_Application {
     }
     
     /**
-     * This method is called when the application loads.
+     * This method is called when the application loads. This happens within
+     * the application's index.php file in its www directory.
      */
     public function run() {
 	$this->clearCache();
@@ -49,7 +72,8 @@ class Sodapop_Application {
     }
     
     /**
-     * This method can be called to clear the cache if APC is in use.
+     * This method can be called to clear the cache if APC is in use. It should
+     * be used if any database tables have changed their definitions.
      */
     public function clearCache() {
 	if (function_exists('apc_clear_cache')) {
@@ -57,7 +81,19 @@ class Sodapop_Application {
 	}
     }
     
-    
+    /**
+     * Loads the given controller and performs the action. If the given controller
+     * or action doesn't exist it loads the 404 handler in the IndexController, and if 
+     * there is an exception the 500 handler.
+     * 
+     * This method is generally not meant to be called by users.
+     * 
+     * @param string $controller
+     * @param string $action
+     * @param Sodapop_Request $request
+     * @param Sodapop_View_Abstract $view
+     * @param string $baseUrl
+     */
     public function loadControllerAction($controller, $action, $request, $view, $baseUrl) {
         // echo $controller."_".$action;
 	try {
@@ -93,6 +129,12 @@ class Sodapop_Application {
         exit();
     }
     
+    /**
+     * Returns all of the table definitions for the given identifier.
+     * 
+     * @param string $connection_identifier
+     * @return array
+     */
     public function getTableDefinitions($connection_identifier) {
 	if (isset($this->table_definitions[$connection_identifier])) {
 	    return $this->table_definitions[$connection_identifier];
@@ -101,6 +143,14 @@ class Sodapop_Application {
 	}
     }
     
+    /**
+     * Iterates over the application's connections and looks for a matching
+     * table. If one is found it will have that connection define a class
+     * for the given table.
+     * 
+     * @param string $table_name
+     * @param string $class_name
+     */
     public function defineTableClass($table_name, $class_name) {
 	foreach ($this->table_definitions as $connection_identifier => $tables) {
 	    foreach($tables as $db_table_name => $table_definition){
@@ -112,6 +162,12 @@ class Sodapop_Application {
 	} 
     }
     
+    /**
+     * Returns an item from the config
+     * 
+     * @param string $key
+     * @return mixed
+     */
     public function getConfig($key) {
 	if (isset($this->config[$key])) {
 	    return $this->config[$key];
@@ -120,6 +176,12 @@ class Sodapop_Application {
 	}
     }
     
+    /**
+     * Returns the requested database connection.
+     * 
+     * @param string $connection_identifier
+     * @return Sodapop_Database_Abstract
+     */
     public function getConnection($connection_identifier = 'default') {
 	if (isset($this->connections[$connection_identifier])) {
 	    return $this->connections[$connection_identifier];

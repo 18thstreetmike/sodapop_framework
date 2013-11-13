@@ -1,8 +1,29 @@
 <?php
+/*
+ * Copyright (C) 2013 Michael Arace 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /**
- * The base class for a table or form.
- *
+ * Sodapop_Database_Table_Abstract is the base class for models in Sodapop.
+ * 
+ * Each instance represents one row in the given table.
+ * 
+ * Subclasses of it are created automatically when a user tries to access
+ * a table-based model. Users can subclass it directly or subclass the 
+ * automatically-generated class files with Sodapop_Model_[TableName].
  */
 abstract class Sodapop_Database_Table_Abstract {
 
@@ -13,6 +34,12 @@ abstract class Sodapop_Database_Table_Abstract {
     protected $fieldDefinitions = array();
     protected $lazyLoaded = false;
 
+    /**
+     * The constructor. Takes a primary key scalar or an associative array for 
+     * multi-column primary keys.
+     * 
+     * @param int or array $id a scalar or array representing the primary key for the row.
+     */
     public function __construct($id = null) {
         if (!is_null($id)) {
 	    if (is_array($id)) {
@@ -28,6 +55,12 @@ abstract class Sodapop_Database_Table_Abstract {
 	}
     }
 
+    /**
+     * The magic getter.
+     * 
+     * @param string $name the name of the column in camelcaps.
+     * @return scalar
+     */
     public function __get($name) {
         if (!$this->lazyLoaded) {
 	    $canLookup = true;
@@ -48,6 +81,13 @@ abstract class Sodapop_Database_Table_Abstract {
         }
     }
 
+    /**
+     * The magic setter
+     * 
+     * @param string $name
+     * @param scalar $value
+     * @return object
+     */
     public function __set($name, $value) {
         if (!$this->lazyLoaded) {
 	    $canLookup = true;
@@ -66,6 +106,12 @@ abstract class Sodapop_Database_Table_Abstract {
 	return $this;
     }
 
+    /**
+     * The magic call function
+     * 
+     * @param string $name
+     * @param array $arguments
+     */
     public function __call($name, $arguments) {
         if (isset($arguments[0]) && is_array($arguments[0])) {
             foreach ($arguments[0] as $key => $value) {
@@ -83,26 +129,23 @@ abstract class Sodapop_Database_Table_Abstract {
         }
     }
 
+    /**
+     * Populates the data in the object which already has a primary
+     * key set.
+     */
     public abstract function loadData();
 
+    /**
+     * Saves the row to the database.
+     */
     protected abstract function save($action = 'UPDATE');
 
-    public function getFieldDefinitions() {
-        return $this->fieldDefinitions;
-    }
-
-    public function getFieldDefinition($field) {
-        if (isset($this->fieldDefinitions[$field])) {
-            return $this->fieldDefinitions[$field];
-        } else {
-            return null;
-        }
-    }
-
-    public function getChildTableDefinitions() {
-        return $this->childTableDefinitions;
-    }
-
+    /**
+     * Returns this object's data as an array.
+     * 
+     * @param boolean $switch_to_underscores
+     * @return array
+     */
     public function asArray($switch_to_underscores = false) {
 	if (!$this->lazyLoaded) {
 	    $canLookup = true;

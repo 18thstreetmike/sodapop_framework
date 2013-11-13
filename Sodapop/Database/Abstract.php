@@ -1,9 +1,26 @@
 <?php
+/*
+ * Copyright (C) 2013 Michael Arace 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 
 /**
- * The Abstract class representing a database connection
- *
- * @author michaelarace
+ * Sodapop_Database_Abstract is the base class for Sodapop database drivers.
+ * 
+ * If a driver does not already exist for your database, you can implement
+ * a subclass of Sodapop_Database_Abstract to make one.
  */
 abstract class Sodapop_Database_Abstract {
     
@@ -27,7 +44,8 @@ abstract class Sodapop_Database_Abstract {
     
     /**
      * This function returns the connection identifier for this connection.
-     *
+     * 
+     * This value is user-defined; the standard connection is called 'default'.
      */
     public abstract function getConnectionIdentifier();
     
@@ -66,7 +84,50 @@ abstract class Sodapop_Database_Abstract {
      */
     public abstract function destroy();
 
+    /**
+     * This is used by the autoloader to define a class for the given table/class name.
+     * After this method runs, PHP should have a class in memory with the given classname
+     * that is a subclass of Sodapop_Database_Table_Abstract.
+     * 
+     * $table_definition is an array with the following structure:
+     * 
+     * array(
+     *  'metadata'=>array('primary_key'=> array('column1',...)), 
+     *  'columns' => 
+     *	array(
+     *	  array(
+     *	    'column_name' => ...,
+     *	    'column_type'=>...,
+     *      'nullable'=>...,
+     *      'scale'=>...,
+     *      'precision'=>...
+     *      'length'=>...
+     *    ),...
+     *  )
+     * )
+     */
     public abstract function defineTableClass($table_name, $class_name, $table_definition);
 
+    /**
+     * Returns an array of the table definitions for the tables available in this connection.
+     * 
+     * The return value is an array with the structure:
+     * 
+     * array('tablename1' => array(
+     *  'metadata'=>array('primary_key'=> array('column1',...)), 
+     *  'columns' => 
+     *	array(
+     *	  array(
+     *	    'column_name' => ...,
+     *	    'column_type'=>...,
+     *      'nullable'=>...,
+     *      'scale'=>...,
+     *      'precision'=>...
+     *      'length'=>...
+     *    ),...
+     *  )
+     * ), 'tablename2' => ...);
+     * 
+     */
     public abstract function getTableDefinitions();
 }
