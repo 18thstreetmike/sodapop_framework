@@ -38,7 +38,7 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
         $server_type = array_key_exists('server', $config) ? $config['server'] : 'mysql';
 	try {
             // echo $hostname." ".$port." ".$username. ' '.$password. ' '. $database; die;
-	    $connection = new PDO($server_type.':host='.$hostname.';port='.$port.';dbname='.$database, $username, $password);
+	    $connection = new PDO($server_type.':host='.$hostname.';port='.$port.';dbname='.$database.';charset=utf8', $username, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
             
 	    return new Sodapop_Database_Pdo($connection, $database, $connection_identifier, $server_type);
         } catch (Exception $e) {
