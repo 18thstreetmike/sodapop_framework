@@ -29,6 +29,7 @@ class Sodapop_Application {
     private $connections = array();
     private $table_definitions = array();
     private static $application = null;
+    private $theme = null;
     
     /**
      * The application is a singleton, and this method gives you a reference to it.
@@ -51,6 +52,18 @@ class Sodapop_Application {
 	
 	// load the config
 	$this->loadConfig();
+	
+	// if there is a theme, check that the requested file isn't in the theme's root
+	if (substr($_SERVER['REQUEST_URI'], -1) != '/' && file_exists($this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
+	    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
+	    $fp = fopen($name, 'rb');
+
+	    header("Content-Type: ".determine_mime_type($name));
+	    header("Content-Length: " . filesize($name));
+
+	    fpassthru($fp);
+	    exit;
+	}
 	
 	// connect to the database
 	if (isset($this->config['db_name'])) {
@@ -112,9 +125,11 @@ class Sodapop_Application {
             $controllerObj = new $controller_name($request, $view);
             $controllerObj->controller = $controller;
             $controllerObj->action = $action;
-	    $controllerObj->setViewPath($this->config['view_path'].'/'.$controller . '/' . $action);
+	    $controllerObj->setViewPathBase($this->config['view_path']);
+	    $controllerObj->setViewPath($controller . '/' . $action);
 	    if ($this->config['use_layouts']) {
-		$controllerObj->setLayoutPath($this->config['layout_path']);
+		$controllerObj->setLayoutPathBase($this->config['layout_path']);
+		$controllerObj->setLayoutPath('');
 	    }
             $controllerObj->view->baseUrl = $baseUrl;
             $controllerObj->preDispatch();
@@ -187,6 +202,30 @@ class Sodapop_Application {
 	    return $this->connections[$connection_identifier];
 	} else {
 	    return null;
+	}
+    }
+    
+    /**
+     * Sets a theme from the application's theme directory
+     * 
+     * @param type $theme
+     */
+    public function setTheme($theme) {
+	if (file_exists('../themes/'.$theme)) {
+	    $this->theme = $theme;
+	}
+    }
+    
+    /**
+     * Returns the root directory of the theme.
+     * 
+     * @return string
+     */
+    public function getThemeRoot() {
+	if (is_null($this->theme) || trim($this->theme) == '') {
+	    return '../';
+	} else {
+	    return '../themes/'.$this->theme.'/';
 	}
     }
     
@@ -280,19 +319,25 @@ class Sodapop_Application {
 		$this->config['controller_path'] = '../controllers';
 	    }
 	    if (!isset($this->config['view_path'])) {
-		$this->config['view_path'] = '../views';
+		$this->config['view_path'] = 'views';
 	    }
 	    if (!isset($this->config['use_layouts'])) {
 		$this->config['use_layouts'] = true;
 	    }
 	    if (!isset($this->config['layout_path'])) {
-		$this->config['layout_path'] = '../layouts';
+		$this->config['layout_path'] = 'layouts';
 	    }
 	    if (!isset($this->config['db_driver'])) {
 		$this->config['db_driver'] = 'Sodapop_Database_Pdo';
 	    }
 	    if (!isset($this->config['db_config'])) {
 		$this->config['db_config'] = array('server' => 'mysql');
+	    }
+	    if (isset($this->config['theme'])) {
+		if (!file_exists('../themes/'.$this->config['theme'])) {
+		    exit('Error: Specified theme does not exist.');
+		}
+		$this->theme = $this->config['theme'];
 	    }
 	    if (getenv('USE_CACHE') && function_exists('apc_store')) {
 		apc_store('sodapop_config', $this->config);
@@ -302,8 +347,12 @@ class Sodapop_Application {
 	    $this->routes = apc_fetch('sodapop_routes');
 	} else {
 	    if ($routes_file_text = file_get_contents("../conf/routes.json")) {
-		if (!$routes_array = json_decode($routes_file_text, true)) {
-		    exit('Error: Routes file not in JSON format.');
+		if (trim($routes_file_text) != '') {
+		    if (!$routes_array = json_decode($routes_file_text, true)) {
+			exit('Error: Routes file not in JSON format.');
+		    }
+		} else {
+		    $routes_array = array();
 		}
 		$this->processRoutes($routes_array);
 	    }
@@ -414,7 +463,7 @@ function createClass($className, $extends, $fields = array()) {
 function determine_mime_type($filePath, $mimeFile = 'mime.ini') {
     if (function_exists('finfo_open')) {
         $finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type ala mimetype extension
-        $retval = finfo_file($finfo, $path);
+        $retval = finfo_file($finfo, $filePath);
         finfo_close($finfo);
         return $retval;
     } else {

@@ -42,6 +42,10 @@ class Sodapop_Controller {
 	protected $layoutFile = 'layout';
 	
 	protected $already_rendered = false;
+	
+	protected $viewPathBase = '';
+	
+	protected $layoutPathBase = '';
 
 	public function __construct($request, $view) {
 		$this->request = $request;
@@ -54,7 +58,7 @@ class Sodapop_Controller {
 	 * @param string $viewPath
 	 */
 	public function setViewPath($viewPath) {
-		$this->viewPath = $viewPath;
+		$this->viewPath = $this->viewPathBase.$viewPath;
 	}
 
 	/**
@@ -63,8 +67,27 @@ class Sodapop_Controller {
 	 * @param string $layoutPath
 	 */
 	public function setLayoutPath($layoutPath) {
-		$this->layoutPath = $layoutPath;
+		$this->layoutPath = $this->layoutPathBase.$layoutPath;
 	}
+	
+	/**
+	 * Allows users to override the root directory for views.
+	 * 
+	 * @param string $viewPath
+	 */
+	public function setViewPathBase($viewPathBase) {
+	    $this->viewPathBase = Sodapop_Application::getInstance()->getThemeRoot().$viewPathBase.'/';
+	}
+
+	/**
+	 * Allows users to override the default layout directory.
+	 * 
+	 * @param string $layoutPath
+	 */
+	public function setLayoutPathBase($layoutPathBase) {
+		$this->layoutPathBase = Sodapop_Application::getInstance()->getThemeRoot().$layoutPathBase.'/';
+	}
+	
 
 	/**
 	 * Called by the application before the action.
@@ -96,7 +119,7 @@ class Sodapop_Controller {
 		$this->view->request = $this->request;
 		$this->view->viewFile = $this->viewPath;
 		if (!is_null($this->layoutPath)) {
-		    $this->view->layoutFile = $this->layoutPath.'/'.$this->layoutFile;
+		    $this->view->layoutFile = $this->layoutPathBase.$this->layoutFile;
 		}
 		return $this->view->render();
 	    } else if(!$this->already_rendered && !is_null($text)) {
