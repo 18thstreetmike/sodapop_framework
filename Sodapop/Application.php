@@ -57,7 +57,6 @@ class Sodapop_Application {
 	if (substr($_SERVER['REQUEST_URI'], -1) != '/' && file_exists($this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
 	    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
 	    $fp = fopen($name, 'rb');
-
 	    header("Content-Type: ".determine_mime_type($name));
 	    header("Content-Length: " . filesize($name));
 
@@ -461,7 +460,11 @@ function createClass($className, $extends, $fields = array()) {
 }
 
 function determine_mime_type($filePath, $mimeFile = 'mime.ini') {
-    if (function_exists('finfo_open')) {
+    $standard_types = array('css' => 'text/css', 'js' => 'application/javascript', 'json' => 'application/json', 'html' => 'text/html', 'htm' => 'text/html');
+    $extension = strtolower(substr($filePath, strrpos($filePath, '.') + 1));
+    if (array_key_exists($extension, $standard_types)) {
+	return $standard_types[$extension];
+    } else if (function_exists('finfo_open')) {
         $finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type ala mimetype extension
         $retval = finfo_file($finfo, $filePath);
         finfo_close($finfo);
