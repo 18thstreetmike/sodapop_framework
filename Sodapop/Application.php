@@ -244,6 +244,7 @@ class Sodapop_Application {
 		for($i = 0; $i < count($data['request']); $i++) {
 		    if (isset($matches[$i + 1]) && isset($matches[$i + 1][0])) {
 			$request[$data['request'][$i]] = $matches[$i + 1][0];
+			$_REQUEST[$data['request'][$i]] = $request[$data['request'][$i]];
 		    }
 		}
 		$controller_name = $data['controller'];
