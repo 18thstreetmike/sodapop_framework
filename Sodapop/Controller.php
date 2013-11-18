@@ -117,6 +117,7 @@ class Sodapop_Controller {
 		$this->view->controller = $this->controller;
 		$this->view->action = $this->action;
 		$this->view->request = $this->request;
+		$this->view->viewFileBase = $this->viewPathBase;
 		$this->view->viewFile = $this->viewPath;
 		if (!is_null($this->layoutPath)) {
 		    $this->view->layoutFile = $this->layoutPathBase.$this->layoutFile;

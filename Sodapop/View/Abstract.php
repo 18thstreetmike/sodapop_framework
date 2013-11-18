@@ -34,6 +34,8 @@ abstract class Sodapop_View_Abstract {
 
     protected $viewFile = null;
     
+    protected $viewFileBase = null;
+    
     protected $viewContent = null;
 
     public function __construct($config = null) {
@@ -47,6 +49,8 @@ abstract class Sodapop_View_Abstract {
     public function __set($name, $value) {
 	if ($name == 'viewFile') {
 	    $this->viewFile = $value;
+	} else if ($name == 'viewFileBase') {
+	    $this->viewFileBase = $value;
 	} else if ($name == 'layoutFile') {
 	    $this->layoutFile = $value;
 	} else if ($name == 'viewContent') {
@@ -76,4 +80,9 @@ abstract class Sodapop_View_Abstract {
      * It should return a string that represents the rendered output so that the application can echo it appropriately.
      */
     public abstract function render();
+    
+    /**
+     * This method is called within a view file to render a partial view.
+     */
+    public abstract function renderPartial($viewPath);
 }

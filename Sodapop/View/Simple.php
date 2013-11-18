@@ -52,4 +52,8 @@ class Sodapop_View_Simple extends Sodapop_View_Abstract {
         
 	return $viewContent;
     }
+    
+    public function renderPartial($viewPath) {
+	require_once $this->viewFileBase.$viewPath.'.php';
+    }
 }

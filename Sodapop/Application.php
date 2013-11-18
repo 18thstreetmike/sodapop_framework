@@ -22,6 +22,8 @@
  * It is a singleton and you can get a reference to it by calling 
  * Sodapop_Application::getInstance().
  */
+session_start();
+
 class Sodapop_Application {
     
     private $config = array();
@@ -228,6 +230,17 @@ class Sodapop_Application {
 	}
     }
     
+    public function setDebug($value) {
+	if ($value) {
+	    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_WARNING);
+	    ini_set('display_errors', '1');
+	    ini_set('html_errors', '1');
+	} else {
+	    ini_set('display_errors', '0');
+	    ini_set('html_errors', '0');
+	}
+    }
+    
     private function getRoute() {
 	$request_parts = explode('/', strpos($_SERVER["REQUEST_URI"], '?') === false ? $_SERVER["REQUEST_URI"] : substr($_SERVER["REQUEST_URI"], 0, strpos($_SERVER["REQUEST_URI"], '?')));
 	$request_uri = '';
@@ -287,6 +300,7 @@ class Sodapop_Application {
 	    }
 	    for($i = 2; $i < count($request_parts); $i++) {
 		$request[$request_parts[$i]] = isset($request_parts[$i+1]) ? $request_parts[$i+1] : '';
+		$_REQUEST[$request_parts[$i]] = $request[$request_parts[$i]];
 		$i++;
 	    }
 	    return array(
@@ -303,8 +317,12 @@ class Sodapop_Application {
 	    if (!$config_file_text = file_get_contents("../conf/sodapop.json")) {
 		exit('Error: Config file not found.');
 	    }
-	    if (!$config = json_decode($config_file_text, true)) {
-		exit('Error: Config file not in JSON format.');
+	    if (trim($config_file_text) != '') {
+		if (!$config = json_decode($config_file_text, true)) {
+		    exit('Error: Config file not in JSON format.');
+		}
+	    } else {
+		$config = array();
 	    }
 	    if (isset($config['default'])) {
 		$this->config = $config['default'];
@@ -330,8 +348,11 @@ class Sodapop_Application {
 	    if (!isset($this->config['db_driver'])) {
 		$this->config['db_driver'] = 'Sodapop_Database_Pdo';
 	    }
-	    if (!isset($this->config['db_config'])) {
-		$this->config['db_config'] = array('server' => 'mysql');
+	    if (!isset($this->config['db_driver'])) {
+		$this->config['db_driver'] = 'Sodapop_Database_Pdo';
+	    }
+	    if (!isset($this->config['debug'])) {
+		$this->config['debug'] = true;
 	    }
 	    if (isset($this->config['theme'])) {
 		if (!file_exists('../themes/'.$this->config['theme'])) {
@@ -357,6 +378,7 @@ class Sodapop_Application {
 		$this->processRoutes($routes_array);
 	    }
 	}
+	$this->setDebug($this->config['debug']);
     }
     private function processRoutes($routes_array) {
 	foreach($routes_array as $key => $value) {
