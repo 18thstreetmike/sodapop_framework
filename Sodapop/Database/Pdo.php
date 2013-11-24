@@ -108,7 +108,7 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
                 $columnString .= ',';
             }
             $columnString .= "'" . Sodapop_Inflector::underscoresToCamelCaps(strtolower($column['column_name']), true, false) . "' => array(";
-            $columnString .= "'type_name' => '" . addslashes($column['column_type']) . "','null' => '" . ($column['nullable'] ? 'true' : 'false') . "','array_flag' => false";
+            $columnString .= "'type_name' => '" . addslashes($column['column_type']) . "','null' => " . ($column['nullable'] ? 'true' : 'false') . ",'array_flag' => false";
             $columnString .= ")";
         }
         $columnString .= ');';
@@ -116,76 +116,7 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
 	$table_name = preg_replace("/[^a-zA-Z0-9_]+/i", "", $table_name);
         $overriddenFunctions = '
                         protected $tableName = \''.addslashes($table_name).'\';
-
-			public function loadData() {
-			    if($this->isPrimaryKeySet()) {
-				$result = Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runQuery("SELECT * FROM ".$this->tableName." WHERE ".$this->getPrimaryKeyWhereClause());
-                                if (count($result) > 0) {
-				    for($i = 0; $i < count($result); $i++) {
-					foreach ($result[$i] as $key => $value) {
-					    $this->fields[Sodapop_Inflector::underscoresToCamelCaps($key, true, false)] = $value;
-					    $this->oldFields[Sodapop_Inflector::underscoresToCamelCaps($key, true, false)] = $value;
-					}
-				    }
-				}
-				$this->lazyLoaded = true;
-			    }
-			}
-			
-			protected function save($action = \'UPDATE\') {
-				if (strtoupper($action) == \'DELETE\' && $this->isPrimaryKeySet()) {
-					Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runQuery("DELETE FROM ".$this->tableName." WHERE ".$this->getPrimaryKeyWhereClause());
-				} else {
-					$setClause = \'\';
-					foreach($this->fields as $fieldName => $newValue) {
-					    if ($setClause != \'\') {
-						    $setClause .= \',\';
-					    }
-					    if (is_null($newValue) || $newValue === "null") {
-						$setClause .= " ".Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = null ";
-					    } else {
-						// $setClause .= " ".Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = :".$fieldName;
-						$setClause .= " ".Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = \'".addslashes($newValue)."\' ";
-					    }
-					}
-					if (trim($setClause) != "") {
-						if (strtoupper($action) == \'INSERT\') {
-							$statement = "INSERT INTO ".$this->tableName." SET ".$setClause;
-                                                        // var_dump($this->fields);
-							Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runParameterizedUpdate($statement, $this->fields);
-							if (count($this->primaryKey) == 1) {
-							    $this->fields[$this->primaryKey[0]] = mysql_insert_id();
-							}
-						} else if (strtoupper($action) == \'UPDATE\') {
-							// echo "UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause();
-							Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runUpdate("UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause());
-							// Sodapop_Application::getInstance()->getConnection(\''.addslashes($this->connection_identifier).'\')->runParameterizedUpdate("UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause(), $this->fields);
-						}
-						$this->oldFields = $this->fields;
-					}
-				}
-			}
-			
-			public function isPrimaryKeySet() {
-			    foreach($this->primaryKey as $column) {
-				if (!isset($this->fields[$column])) {
-				    return false;
-				}
-			    }
-			    return true;
-			}
-			
-			public function getPrimaryKeyWhereClause() {
-			    $retval = \'\';
-			    foreach($this->primaryKey as $column) {
-				if ($retval != "") {
-				    $retval .= " AND ";
-				}
-				$retval .= $column ." = \'".addslashes($this->fields[$column])."\'"; 
-			    }
-			    return $retval;
-			}
-			';
+                        protected $connectionIdentifier = \''.addslashes($this->connection_identifier).'\';';
         $classDef = "class " . $class_name . " extends Sodapop_Database_Table_Abstract {\n" . $columnString . "\n" . $overriddenFunctions . "\n}";
         // echo $classDef; die;
 	eval($classDef);

@@ -76,7 +76,7 @@ class Sodapop_Controller {
 	 * @param string $viewPath
 	 */
 	public function setViewPathBase($viewPathBase) {
-	    $this->viewPathBase = Sodapop_Application::getInstance()->getThemeRoot().$viewPathBase.'/';
+	    $this->viewPathBase = Sodapop_Application::getInstance()->getThemeRoot($this->controller, $this->action).$viewPathBase.'/';
 	}
 
 	/**
@@ -85,7 +85,7 @@ class Sodapop_Controller {
 	 * @param string $layoutPath
 	 */
 	public function setLayoutPathBase($layoutPathBase) {
-		$this->layoutPathBase = Sodapop_Application::getInstance()->getThemeRoot().$layoutPathBase.'/';
+            $this->layoutPathBase = Sodapop_Application::getInstance()->getThemeRoot($this->controller, $this->action).$layoutPathBase.'/';
 	}
 	
 

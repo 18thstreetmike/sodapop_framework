@@ -33,6 +33,7 @@ abstract class Sodapop_Database_Table_Abstract {
     protected $oldFields = array();
     protected $fieldDefinitions = array();
     protected $lazyLoaded = false;
+    protected $connectionIdentifier = 'default';
 
     /**
      * The constructor. Takes a primary key scalar or an associative array for 
@@ -133,13 +134,80 @@ abstract class Sodapop_Database_Table_Abstract {
      * Populates the data in the object which already has a primary
      * key set.
      */
-    public abstract function loadData();
+    public function loadData() {
+        if($this->isPrimaryKeySet()) {
+            $result = Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->runQuery("SELECT * FROM ".$this->tableName." WHERE ".$this->getPrimaryKeyWhereClause());
+            if (count($result) > 0) {
+                for($i = 0; $i < count($result); $i++) {
+                    foreach ($result[$i] as $key => $value) {
+                        $this->fields[Sodapop_Inflector::underscoresToCamelCaps($key, true, false)] = $value;
+                        $this->oldFields[Sodapop_Inflector::underscoresToCamelCaps($key, true, false)] = $value;
+                    }
+                }
+            }
+            $this->lazyLoaded = true;
+        }
+        return true;
+    }
 
     /**
      * Saves the row to the database.
      */
-    protected abstract function save($action = 'UPDATE');
+    protected function save($action = 'UPDATE') {
+            if (strtoupper($action) == 'DELETE' && $this->isPrimaryKeySet()) {
+                    Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->runQuery("DELETE FROM ".$this->tableName." WHERE ".$this->getPrimaryKeyWhereClause());
+                    return true;
+            } else {
+                    $setClause = '';
+                    foreach($this->fields as $fieldName => $newValue) {
+                        if ($setClause != '') {
+                                $setClause .= ',';
+                        }
+                        if (is_null($newValue) || $newValue === "null") {
+                            $setClause .= " ".Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = null ";
+                        } else {
+                            // $setClause .= " ".Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = :".$fieldName;
+                            $setClause .= " ".Sodapop_Inflector::camelCapsToUnderscores($fieldName)." = '".addslashes($newValue)."' ";
+                        }
+                    }
+                    if (trim($setClause) != "") {
+                            if (strtoupper($action) == 'INSERT') {
+                                    $statement = "INSERT INTO ".$this->tableName." SET ".$setClause;
+                                    // var_dump($this->fields);
+                                    Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->runParameterizedUpdate($statement, $this->fields);
+                                    if (count($this->primaryKey) == 1) {
+                                        $this->fields[$this->primaryKey[0]] = mysql_insert_id();
+                                    }
+                            } else if (strtoupper($action) == 'UPDATE') {
+                                    // echo "UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause();
+                                    Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->runUpdate("UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause());
+                                    // Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->runParameterizedUpdate("UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause(), $this->fields);
+                            }
+                            $this->oldFields = $this->fields;
+                    }
+                    return true;
+            }
+            return false;
+    }
 
+    /**
+     * Sets the connection identifier for this model.
+     * 
+     * @param string $connectionIdentifier
+     */
+    public function setConnectionIdentifier($connectionIdentifier) {
+        $this->connectionIdentifier = $connectionIdentifier;
+    }
+    
+    /**
+     * Returns the database connection used to create this model.
+     * 
+     * @return Sodapop_Database_Abstract
+     */
+    public function getConnection() {
+        return Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier);
+    }
+    
     /**
      * Returns this object's data as an array.
      * 
@@ -167,5 +235,36 @@ abstract class Sodapop_Database_Table_Abstract {
 	} else {
 	    return $this->fields;
 	}
+    }
+    
+    /**
+     * Returns true if the primary key is set for this object. 
+     * 
+     * @return boolean
+     */
+    protected function isPrimaryKeySet() {
+        foreach($this->primaryKey as $column) {
+            if (!isset($this->fields[$column])) {
+                return false;
+            }
+        }
+        return true;
+    }
+			
+    /**
+     * Returns the WHERE clause needed to address this row based on the table's
+     * primary key.
+     * 
+     * @return string
+     */
+    protected function getPrimaryKeyWhereClause() {
+        $retval = '';
+        foreach($this->primaryKey as $column) {
+            if ($retval != "") {
+                $retval .= " AND ";
+            }
+            $retval .= $column ." = '".addslashes($this->fields[$column])."'"; 
+        }
+        return $retval;
     }
 }

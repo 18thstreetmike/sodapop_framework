@@ -32,6 +32,7 @@ class Sodapop_Application {
     private $table_definitions = array();
     private static $application = null;
     private $theme = null;
+    private $theme_ignored_actions = array();
     
     /**
      * The application is a singleton, and this method gives you a reference to it.
@@ -113,7 +114,7 @@ class Sodapop_Application {
 	try {
 	    $controller_name = ucfirst($controller).'Controller';;
 	    $action_name = 'action'.ucfirst($action);
-	    include_once('../controllers/' . $controller_name . '.php');
+	    include_once('../'.$this->config['controller_path'].'/' . $controller_name . '.php');
 	    if (!class_exists($controller_name) || !method_exists($controller_name, $action_name)) {
 		// try first to get the 404 action of the IndexController
 		if ($controller_name == 'IndexContoller') {
@@ -222,10 +223,17 @@ class Sodapop_Application {
      * 
      * @return string
      */
-    public function getThemeRoot() {
+    public function getThemeRoot($controller = null, $action = null) {
 	if (is_null($this->theme) || trim($this->theme) == '') {
 	    return '../';
 	} else {
+            if (!is_null($controller) && array_key_exists($controller, $this->theme_ignored_actions)) {
+                if (count($this->theme_ignored_actions[$controller]) == 0) {
+                    return '../';
+                } else if (!is_null($action) && in_array($action, $this->theme_ignored_actions[$controller])) {
+                    return '../';
+                }
+            }
 	    return '../themes/'.$this->theme.'/';
 	}
     }
@@ -334,7 +342,7 @@ class Sodapop_Application {
 	    }
 	    // add the defaults if they aren't already specified.
 	    if (!isset($this->config['controller_path'])) {
-		$this->config['controller_path'] = '../controllers';
+		$this->config['controller_path'] = 'controllers';
 	    }
 	    if (!isset($this->config['view_path'])) {
 		$this->config['view_path'] = 'views';
@@ -348,11 +356,8 @@ class Sodapop_Application {
 	    if (!isset($this->config['db_driver'])) {
 		$this->config['db_driver'] = 'Sodapop_Database_Pdo';
 	    }
-	    if (!isset($this->config['db_driver'])) {
-		$this->config['db_driver'] = 'Sodapop_Database_Pdo';
-	    }
 	    if (!isset($this->config['debug'])) {
-		$this->config['debug'] = true;
+		$this->config['debug'] = false;
 	    }
 	    if (isset($this->config['theme'])) {
 		if (!file_exists('../themes/'.$this->config['theme'])) {
@@ -360,7 +365,24 @@ class Sodapop_Application {
 		}
 		$this->theme = $this->config['theme'];
 	    }
-	    if (getenv('USE_CACHE') && function_exists('apc_store')) {
+            if (isset($this->config['theme_ignore_actions'])) {
+		if (is_array($this->config['theme_ignore_actions'])) {
+                    foreach($this->config['theme_ignore_actions'] as $action) {
+                        $parts = explode('/', $action);
+                        if(count($parts) == 1) {
+                            $this->theme_ignored_actions[$parts[0]] = array();
+                        } else {
+                            if (!array_key_exists($parts[0], $this->theme_ignored_actions)) {
+                                $this->theme_ignored_actions[$parts[0]] = array();
+                            }
+                            if(!in_array($parts[1], $this->theme_ignored_actions[$parts[0]])) {
+                                $this->theme_ignored_actions[$parts[0]][] = $parts[1];
+                            }
+                        }
+                    }
+                }
+	    }
+            if (getenv('USE_CACHE') && function_exists('apc_store')) {
 		apc_store('sodapop_config', $this->config);
 	    }
 	}
