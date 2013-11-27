@@ -237,7 +237,39 @@ class Sodapop_Application {
 	    return '../themes/'.$this->theme.'/';
 	}
     }
+    /**
+     * Connects to a new database.
+     * 
+     * @param string $connection_identifier
+     * @param string $driver_class
+     * @param string $hostname
+     * @param int $port
+     * @param string $user
+     * @param string $password
+     * @param string $database_name
+     * @param array $db_config
+     */
+    public function connectToDatabase($connection_identifier, $driver_class, $hostname, $port, $user, $password, $database_name, $db_config = array()) {
+	try {
+	    $this->connections[$connection_identifier] = $driver_class::connect($hostname, $port, $user, $password, $database_name, $db_config, $connection_identifier);
+	    if (getenv('USE_CACHE') && function_exists('apc_exists') && apc_exists('table_definitions_'.$connection_identifier)) {
+		$this->table_definitions[$connection_identifier] = apc_fetch('table_info_'.$connection_identifier);
+	    } else {
+		$this->table_definitions[$connection_identifier] = $this->connections[$connection_identifier]->getTableDefinitions();
+		if (getenv('USE_CACHE') && function_exists('apc_store')) {
+		    apc_store('table_definitions_'.$connection_identifier, $this->table_definitions);
+		}
+	    }
+	} catch (Exception $e) {
+	    exit('Error: '.$e->getMessage());
+	}
+    }
     
+    /**
+     * Turns debugging mode on or off.
+     * 
+     * @param boolean $value
+     */
     public function setDebug($value) {
 	if ($value) {
 	    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_WARNING);
@@ -450,21 +482,7 @@ class Sodapop_Application {
 	}
     }
     
-    private function connectToDatabase($connection_identifier, $driver_class, $hostname, $port, $user, $password, $database_name, $db_config) {
-	try {
-	    $this->connections[$connection_identifier] = $driver_class::connect($hostname, $port, $user, $password, $database_name, $db_config, $connection_identifier);
-	    if (getenv('USE_CACHE') && function_exists('apc_exists') && apc_exists('table_definitions_'.$connection_identifier)) {
-		$this->table_definitions[$connection_identifier] = apc_fetch('table_info_'.$connection_identifier);
-	    } else {
-		$this->table_definitions[$connection_identifier] = $this->connections[$connection_identifier]->getTableDefinitions();
-		if (getenv('USE_CACHE') && function_exists('apc_store')) {
-		    apc_store('table_definitions_'.$connection_identifier, $this->table_definitions);
-		}
-	    }
-	} catch (Exception $e) {
-	    exit('Error: '.$e->getMessage());
-	}
-    }
+    
 }
 
 /**
