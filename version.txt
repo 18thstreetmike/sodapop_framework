@@ -1,0 +1,6 @@
+Sodapop Version: v0.9.0
+--------------------------
+
+Sodapop is currently used on several production sites but has just recently been 
+opened to outside developers. It is likely that there are some bugs that will
+need to be fixed.
