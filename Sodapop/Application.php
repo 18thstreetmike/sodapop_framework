@@ -33,6 +33,7 @@ class Sodapop_Application {
     private static $application = null;
     private $theme = null;
     private $theme_ignored_actions = array();
+    private $initialized = false;
     
     /**
      * The application is a singleton, and this method gives you a reference to it.
@@ -46,16 +47,20 @@ class Sodapop_Application {
 	return Sodapop_Application::$application;
     }
     
+    public function initialize() {
+        // load the config
+        $this->loadConfig();
+        $this->initialized = true;
+    }
+    
     /**
-     * This method is called when the application loads. This happens within
+     * This method is called after the application is initialized. This happens within
      * the application's index.php file in its www directory.
      */
     public function run() {
-	$this->clearCache();
-	
-	// load the config
-	$this->loadConfig();
-	
+        if (!$this->initialized) {
+            $this->initialize();
+        }
 	// if there is a theme, check that the requested file isn't in the theme's root
 	if (substr($_SERVER['REQUEST_URI'], -1) != '/' && file_exists($this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
 	    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
@@ -281,6 +286,17 @@ class Sodapop_Application {
 	}
     }
     
+    /**
+     * Add a route to the routing table.
+     * 
+     * @param string $route
+     * @param string $destination
+     */
+    public function addRoute($route, $destination) {
+        $routes = array($route => $destination);
+        $this->processRoutes($routes, false);
+    }
+    
     private function getRoute() {
 	$request_parts = explode('/', strpos($_SERVER["REQUEST_URI"], '?') === false ? $_SERVER["REQUEST_URI"] : substr($_SERVER["REQUEST_URI"], 0, strpos($_SERVER["REQUEST_URI"], '?')));
 	$request_uri = '';
@@ -434,14 +450,18 @@ class Sodapop_Application {
 	}
 	$this->setDebug($this->config['debug']);
     }
-    private function processRoutes($routes_array) {
+    private function processRoutes($routes_array, $exit_on_error = true) {
 	foreach($routes_array as $key => $value) {
 	    $path_items = explode('/', $key);
 	    $route = '';
 	    $request_items = array();
 	    $destination = explode('/', $value);
 	    if (count($destination) != 2) {
-		exit('Error: Route "'.$key.'" has an invalid destination.');
+                if ($exit_on_error) {
+                    exit('Error: Route "'.$key.'" has an invalid destination.');
+                } else {
+                    throw new Exception('Route "'.$key.'" has an invalid destination.');
+                }
 	    }
 	    foreach($path_items as $path_item) {
 		if(substr($path_item, 0, 1) == '<' && substr($path_item, strlen($path_item) - 1, 1) == '>') {
@@ -449,7 +469,11 @@ class Sodapop_Application {
 			$request_items[] = substr($path_item, 1, $colon_pos - 1);
 			$route .= '/('.substr($path_item, $colon_pos + 1, -1).')';
 		    } else {
-			exit('Error: Route "'.$key.'" malformed.');
+                        if ($exit_on_error) {
+                            exit('Error: Route "'.$key.'" malformed.');
+                        } else {
+                            throw new Exception('Route "'.$key.'" malformed.');
+                        }
 		    }
 		} else {
 		    $route .= '/'.$path_item;
