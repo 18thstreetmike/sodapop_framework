@@ -77,7 +77,7 @@ class Sodapop_Application {
                     $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
                     $output = file_get_contents($name);
                     apc_store('filet_'.$name, determine_mime_type($name));
-                    apc_store('files_'.$name, filesize($output));
+                    apc_store('files_'.$name, filesize($name));
                     apc_store('filec_'.$name, $output);
                     ob_start("ob_gzhandler"); 
                     header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
