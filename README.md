@@ -59,7 +59,7 @@ You have many choices in frameworks; why should you consider this one?
 
 Sodapop has several core values that guide its development.
 
-1. Code should be well-organized; #everything should be easily discoverable# if one knows the basics of the framework.
-2. Boilerplate code is unnecessary. Let computers handle the repetitive stuff, they enjoy it more.
-3. Convention over configuration. You shouldn't have to state everything explicitly, but you can override defaults.
-4. A framework should get out of the way and not make you change your style.
+1. Code should be well-organized; **everything should be easily discoverable** if one knows the basics of the framework.
+2. **Boilerplate code is unnecessary.** Let computers handle the repetitive stuff, they enjoy it more.
+3. **Convention over configuration.** You shouldn't have to state everything explicitly, but you can override defaults.
+4. A framework should **get out of the way** and not make you change your style.
