@@ -96,4 +96,4 @@ next steps.
 [4]: http://sodapop.restlessdev.com/documentation/sodapop_directories   "Directory Structure"
 [5]: http://sodapop.restlessdev.com/documentation/routes_conf   "Routing"
 [6]: http://sodapop.restlessdev.com/documentation/sodapop_conf   "Configuration"
-[7]: http://sodapop.restlessdev.com/documentation/getting_started   "Getting Started"
+[7]: http://sodapop.restlessdev.com/documentation/configuring_sodapop   "Getting Started"
