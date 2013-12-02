@@ -381,6 +381,12 @@ class Sodapop_Application {
     private function loadConfig() {
 	if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('sodapop_config')) {
 	    $this->config = apc_fetch('sodapop_config');
+            if (isset($this->config['theme'])) {
+		if (!file_exists('../themes/'.$this->config['theme'])) {
+		    exit('Error: Specified theme does not exist.');
+		}
+		$this->theme = $this->config['theme'];
+	    }
 	} else {
 	    if (!$config_file_text = file_get_contents("../conf/sodapop.json")) {
 		exit('Error: Config file not found.');
