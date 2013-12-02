@@ -102,6 +102,17 @@ class Sodapop_Application {
     }
     
     /**
+     * 
+     */
+    public function getCacheInfo() {
+        if (function_exists('apc_cache_info')) {
+            return apc_cache_info();
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * Loads the given controller and performs the action. If the given controller
      * or action doesn't exist it loads the 404 handler in the IndexController, and if 
      * there is an exception the 500 handler.
