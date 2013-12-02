@@ -98,6 +98,7 @@ class Sodapop_Application {
     public function clearCache() {
 	if (function_exists('apc_clear_cache')) {
 	    apc_clear_cache();
+            apc_clear_cache("user");
 	}
     }
     
@@ -268,11 +269,11 @@ class Sodapop_Application {
     public function connectToDatabase($connection_identifier, $driver_class, $hostname, $port, $user, $password, $database_name, $db_config = array()) {
 	try {
 	    $this->connections[$connection_identifier] = $driver_class::connect($hostname, $port, $user, $password, $database_name, $db_config, $connection_identifier);
-	    if (getenv('USE_CACHE') && function_exists('apc_exists') && apc_exists('table_definitions_'.$connection_identifier)) {
+	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('table_definitions_'.$connection_identifier)) {
 		$this->table_definitions[$connection_identifier] = apc_fetch('table_info_'.$connection_identifier);
 	    } else {
 		$this->table_definitions[$connection_identifier] = $this->connections[$connection_identifier]->getTableDefinitions();
-		if (getenv('USE_CACHE') && function_exists('apc_store')) {
+		if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
 		    apc_store('table_definitions_'.$connection_identifier, $this->table_definitions);
 		}
 	    }
@@ -378,7 +379,7 @@ class Sodapop_Application {
 	}
     }
     private function loadConfig() {
-	if (getenv('USE_CACHE') && function_exists('apc_exists') && apc_exists('sodapop_config')) {
+	if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('sodapop_config')) {
 	    $this->config = apc_fetch('sodapop_config');
 	} else {
 	    if (!$config_file_text = file_get_contents("../conf/sodapop.json")) {
@@ -441,11 +442,11 @@ class Sodapop_Application {
                     }
                 }
 	    }
-            if (getenv('USE_CACHE') && function_exists('apc_store')) {
+            if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
 		apc_store('sodapop_config', $this->config);
 	    }
 	}
-	if (getenv('USE_CACHE') && function_exists('apc_exists') && apc_exists('sodapop_routes')) {
+	if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('sodapop_routes')) {
 	    $this->routes = apc_fetch('sodapop_routes');
 	} else {
 	    if ($routes_file_text = file_get_contents("../conf/routes.json")) {
@@ -496,7 +497,7 @@ class Sodapop_Application {
 		'action' => $destination[1]
 	    );
 	}
-	if (getenv('USE_CACHE') && function_exists('apc_store')) {
+	if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
 	    apc_store('sodapop_routes', $this->routes);
 	}
     }
