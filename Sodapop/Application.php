@@ -68,31 +68,34 @@ class Sodapop_Application {
                 ob_start("ob_gzhandler"); 
                 header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                header('Content-Encoding: gzip');
+                
                 echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 ob_flush();
                 exit;
             } else {
                 if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
                     $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
-                    $gzipped_output = gzencode (file_get_contents($name), 6);
+                    $output = file_get_contents($name);
                     apc_store('filet_'.$name, determine_mime_type($name));
-                    apc_store('files_'.$name, filesize($gzipped_output));
-                    apc_store('filec_'.$name, $gzipped_output);
+                    apc_store('files_'.$name, filesize($output));
+                    apc_store('filec_'.$name, $output);
                     ob_start("ob_gzhandler"); 
                     header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                    header('Content-Encoding: gzip');
+                    
                     echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     ob_flush();
                     exit;
                 } else {
+                    
                     $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
                     $fp = fopen($name, 'rb');
+                    ob_start("ob_gzhandler");
                     header("Content-Type: ".determine_mime_type($name));
                     header("Content-Length: " . filesize($name));
 
                     fpassthru($fp);
+                    ob_flush();
                     exit;
                 }
             }
