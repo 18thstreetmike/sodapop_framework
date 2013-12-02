@@ -65,11 +65,12 @@ class Sodapop_Application {
 	// if there is a theme, check that the requested file isn't in the theme's root
 	if (substr($_SERVER['REQUEST_URI'], -1) != '/' && file_exists($this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
 	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
+                ob_start("ob_gzhandler"); 
                 header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 header('Content-Encoding: gzip');
                 echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                flush();
+                ob_flush();
                 exit;
             } else {
                 if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
@@ -78,12 +79,12 @@ class Sodapop_Application {
                     apc_store('filet_'.$name, determine_mime_type($name));
                     apc_store('files_'.$name, filesize($gzipped_output));
                     apc_store('filec_'.$name, $gzipped_output);
-                
+                    ob_start("ob_gzhandler"); 
                     header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     header('Content-Encoding: gzip');
                     echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                    flush();
+                    ob_flush();
                     exit;
                 } else {
                     $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
