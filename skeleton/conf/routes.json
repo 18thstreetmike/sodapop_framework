@@ -1,0 +1,4 @@
+{
+    "post/add":"index/add",
+    "post/<page_slug:[A-Za-z0-9\\-\\_\\.]+>":"index/post"
+}

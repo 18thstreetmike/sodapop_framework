@@ -1,0 +1,19 @@
+{
+    "default": {
+	"db_port":3306,
+	"db_name":"<schema>",
+        "theme":"default"
+    },
+    "hosts" : {
+	"production.example.com" : {
+	    "db_host":"<database>",
+	    "db_user":"<username>",
+	    "db_password":"<password>"
+	},
+	"development.example.com" : {
+	    "db_host":"<database>",
+	    "db_user":"<username>",
+	    "db_password":"<password>"
+	}
+    }
+}

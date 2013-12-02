@@ -1,0 +1,12 @@
+SetEnv USE_CACHE false
+
+php_value include_path ".:../../sodapop_framework:../models:../library"
+
+RewriteEngine On
+RewriteRule ^favicon.ico$ favicon.ico
+
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [NC,L]
+RewriteRule ^.*$ index.php [NC,L]
