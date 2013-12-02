@@ -70,6 +70,7 @@ class Sodapop_Application {
                 header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
                 header('Pragma: cache');
+                header('Cache-Control: public');
                 
                 echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 ob_flush();
@@ -86,6 +87,7 @@ class Sodapop_Application {
                     header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
                     header('Pragma: cache');
+                    header('Cache-Control: public');
                     
                     echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     ob_flush();
@@ -99,6 +101,7 @@ class Sodapop_Application {
                     header("Content-Length: " . filesize($name));
                     header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
                     header('Pragma: cache');
+                    header('Cache-Control: public');
                     
                     fpassthru($fp);
                     ob_flush();
