@@ -295,7 +295,7 @@ class Sodapop_Application {
 	try {
 	    $this->connections[$connection_identifier] = $driver_class::connect($hostname, $port, $user, $password, $database_name, $db_config, $connection_identifier);
 	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('table_definitions_'.$connection_identifier)) {
-		$this->table_definitions[$connection_identifier] = apc_fetch('table_info_'.$connection_identifier);
+		$this->table_definitions[$connection_identifier] = apc_fetch('table_definitions_'.$connection_identifier);
 	    } else {
 		$this->table_definitions[$connection_identifier] = $this->connections[$connection_identifier]->getTableDefinitions();
 		if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
