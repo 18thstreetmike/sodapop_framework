@@ -127,7 +127,7 @@ class Sodapop_Application {
      */
     public function getCacheInfo() {
         if (function_exists('apc_cache_info')) {
-            return apc_cache_info();
+            return apc_cache_info("user");
         } else {
             return false;
         }
