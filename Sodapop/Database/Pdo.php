@@ -54,6 +54,10 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
         $this->connection = null;
     }
 
+    public function lastInsertId() {
+        return $this->connection->lastInsertId();
+    }
+    
     public function runParameterizedQuery($query, $params) {
 	$stmt = $this->connection->prepare($query);
 	foreach ($params as $key => $value) {

@@ -176,7 +176,7 @@ abstract class Sodapop_Database_Table_Abstract {
                                     // var_dump($this->fields);
                                     Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->runParameterizedUpdate($statement, $this->fields);
                                     if (count($this->primaryKey) == 1) {
-                                        $this->fields[$this->primaryKey[0]] = mysql_insert_id();
+                                        $this->fields[$this->primaryKey[0]] = Sodapop_Application::getInstance()->getConnection($this->connectionIdentifier)->lastInsertId();
                                     }
                             } else if (strtoupper($action) == 'UPDATE') {
                                     // echo "UPDATE ".$this->tableName." SET ".$setClause." WHERE ".$this->getPrimaryKeyWhereClause();
