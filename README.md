@@ -66,13 +66,34 @@ Sodapop has several core values that guide its development.
 
 It has several features that support these values.
 
-- The [directory structure] [4] is simple and consistent, and the (default) naming conventions make it easy to find things.
+- The [directory structure] [4] is straightforward and consistent, and the (default) naming conventions make it easy to find things.
 - Any changes to the [routing] [5] system happen in a single file, routes.json, so they will be easy to manage.
+- If one uses its default naming conventions (plural, underscore-separated table names and singular, camelCapped class names) for models,
+you don't need to declare classes.
+- The framework lets you use PHP's built-in superglobals or its own wrappers, and doesn't force you to learn how to do
+everything in its own way.
+- It is being developed from the ground up, slowly. It values consistency over feature-itis.
 
+Themes
+------
 
+One of the most important (and unique) features of Sodapop is that it is totally themeable. It allows you to place
+UI-oriented code (static files, view, and layout templates) in separate named theme directories and switch between
+them with a configuration option or programmatically. It also has a hostname-based [configuration] [6], making it perfect for hosted 
+solutions in which each customer will need to have a custom front-end site with a similar backend.
+
+Please see http://sodapop.restlessdev.com/documentation/themes for more detail.
+
+Getting Started
+---------------
+
+If Sodapop sounds interesting to you, please head over to the [Getting Started] [7] page for instructions on 
+next steps. 
 
 [1]: http://sodapop.restlessdev.com/documentation/controllers   "Controllers"
 [2]: http://sodapop.restlessdev.com/documentation/views    "Views"
 [3]: http://sodapop.restlessdev.com/documentation/models    "Models"
 [4]: http://sodapop.restlessdev.com/documentation/sodapop_directories   "Directory Structure"
 [5]: http://sodapop.restlessdev.com/documentation/routes_conf   "Routing"
+[6]: http://sodapop.restlessdev.com/documentation/sodapop_conf   "Configuration"
+[6]: http://sodapop.restlessdev.com/documentation/getting_started   "Getting Started"
