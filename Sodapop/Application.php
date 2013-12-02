@@ -22,6 +22,7 @@
  * It is a singleton and you can get a reference to it by calling 
  * Sodapop_Application::getInstance().
  */
+register_shutdown_function('session_write_close');
 session_start();
 
 class Sodapop_Application {
