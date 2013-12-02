@@ -63,3 +63,16 @@ Sodapop has several core values that guide its development.
 2. **Boilerplate code is unnecessary.** Let computers handle the repetitive stuff, they enjoy it more.
 3. **Convention over configuration.** You shouldn't have to state everything explicitly, but you can override defaults.
 4. A framework should **get out of the way** and not make you change your style.
+
+It has several features that support these values.
+
+- The [directory structure] [4] is simple and consistent, and the (default) naming conventions make it easy to find things.
+- Any changes to the [routing] [5] system happen in a single file, routes.json, so they will be easy to manage.
+
+
+
+[1]: http://sodapop.restlessdev.com/documentation/controllers   "Controllers"
+[2]: http://sodapop.restlessdev.com/documentation/views    "Views"
+[3]: http://sodapop.restlessdev.com/documentation/models    "Models"
+[4]: http://sodapop.restlessdev.com/documentation/sodapop_directories   "Directory Structure"
+[5]: http://sodapop.restlessdev.com/documentation/routes_conf   "Routing"
