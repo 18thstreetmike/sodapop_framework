@@ -299,7 +299,7 @@ class Sodapop_Application {
 	    } else {
 		$this->table_definitions[$connection_identifier] = $this->connections[$connection_identifier]->getTableDefinitions();
 		if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
-		    apc_store('table_definitions_'.$connection_identifier, $this->table_definitions);
+		    apc_store('table_definitions_'.$connection_identifier, $this->table_definitions[$connection_identifier]);
 		}
 	    }
 	} catch (Exception $e) {
