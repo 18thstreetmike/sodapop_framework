@@ -68,7 +68,8 @@ class Sodapop_Application {
                 ob_start("ob_gzhandler"); 
                 header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
+                header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
+                header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', time()));
                 header('Pragma: cache');
                 header('Cache-Control: public');
                 
@@ -85,7 +86,8 @@ class Sodapop_Application {
                     ob_start("ob_gzhandler"); 
                     header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
+                    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
+                    header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', time()));
                     header('Pragma: cache');
                     header('Cache-Control: public');
                     
@@ -99,7 +101,8 @@ class Sodapop_Application {
                     ob_start("ob_gzhandler");
                     header("Content-Type: ".determine_mime_type($name));
                     header("Content-Length: " . filesize($name));
-                    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 3600));
+                    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
+                    header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', time()));
                     header('Pragma: cache');
                     header('Cache-Control: public');
                     
