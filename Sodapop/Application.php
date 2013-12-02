@@ -63,13 +63,33 @@ class Sodapop_Application {
         }
 	// if there is a theme, check that the requested file isn't in the theme's root
 	if (substr($_SERVER['REQUEST_URI'], -1) != '/' && file_exists($this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
-	    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
-	    $fp = fopen($name, 'rb');
-	    header("Content-Type: ".determine_mime_type($name));
-	    header("Content-Length: " . filesize($name));
+	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
+                header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
 
-	    fpassthru($fp);
-	    exit;
+                echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+            } else {
+                if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
+                    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
+                    $fp = fopen($name, 'rb');
+                    apc_store('filet_'.$name, determine_mime_type($name));
+                    apc_store('files_'.$name, filesize($name));
+                    apc_store('filec_'.$name, file_get_contents($name));
+                
+                    header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                    header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+
+                    echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                } else {
+                    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
+                    $fp = fopen($name, 'rb');
+                    header("Content-Type: ".determine_mime_type($name));
+                    header("Content-Length: " . filesize($name));
+
+                    fpassthru($fp);
+                    exit;
+                }
+            }
 	}
 	
 	// connect to the database
