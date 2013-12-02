@@ -68,6 +68,7 @@ class Sodapop_Application {
                 header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
 
                 echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                flush();
                 exit;
             } else {
                 if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
@@ -81,6 +82,7 @@ class Sodapop_Application {
                     header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
 
                     echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                    flush();
                     exit;
                 } else {
                     $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
