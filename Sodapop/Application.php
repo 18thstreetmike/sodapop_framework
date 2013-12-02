@@ -22,7 +22,7 @@
  * It is a singleton and you can get a reference to it by calling 
  * Sodapop_Application::getInstance().
  */
-register_shutdown_function('session_write_close');
+ini_set('zlib.output_compression','Off');
 session_start();
 
 class Sodapop_Application {
@@ -67,21 +67,21 @@ class Sodapop_Application {
 	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
                 header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-
+                header('Content-Encoding: gzip');
                 echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                 flush();
                 exit;
             } else {
                 if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
                     $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
-                    $fp = fopen($name, 'rb');
+                    $gzipped_output = gzencode (file_get_contents($name), 6);
                     apc_store('filet_'.$name, determine_mime_type($name));
-                    apc_store('files_'.$name, filesize($name));
-                    apc_store('filec_'.$name, file_get_contents($name));
+                    apc_store('files_'.$name, filesize($gzipped_output));
+                    apc_store('filec_'.$name, $gzipped_output);
                 
                     header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-
+                    header('Content-Encoding: gzip');
                     echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
                     flush();
                     exit;
