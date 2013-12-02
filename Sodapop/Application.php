@@ -160,7 +160,7 @@ class Sodapop_Application {
 	    if (!class_exists($controller_name) || !method_exists($controller_name, $action_name)) {
 		// try first to get the 404 action of the IndexController
 		if ($controller_name == 'IndexContoller') {
-		    require_once('404.html');
+		    require('404.html');
 		} else {
 		    $this->loadControllerAction('index', '404', $request, $view, $baseUrl);
 		}

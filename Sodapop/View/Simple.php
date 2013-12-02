@@ -31,7 +31,7 @@ class Sodapop_View_Simple extends Sodapop_View_Abstract {
 	// render the view portion of the template to a string
 	ob_start();
 	if (file_exists($this->viewFile.'.php')) {
-	    require_once($this->viewFile.'.php');
+	    require($this->viewFile.'.php');
 	} else {
 	    exit('Error: View template "'.$this->viewFile.'.php" does not exist.');
 	}
@@ -42,7 +42,7 @@ class Sodapop_View_Simple extends Sodapop_View_Abstract {
 	    $this->viewContent = $viewContent;
 	    ob_start();
 	    if (file_exists($this->layoutFile.'.php')) {
-		require_once($this->layoutFile.'.php');
+		require($this->layoutFile.'.php');
 	    } else {
 		exit('Error: Layout template "'.$this->layoutFile.'.php" does not exist.');
 	    }

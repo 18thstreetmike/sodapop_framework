@@ -22,7 +22,7 @@
  * It wraps another class, Inflect, which was compiled by Sho Kuwamoto. See more 
  * details in Inflect.php.
  */
-require_once('Inflect.php');
+require('Inflect.php');
 
 class Sodapop_Inflector {
     public static function pluralize( $string ) {
