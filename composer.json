@@ -1,0 +1,19 @@
+{
+    "name": "sodapop/framework",
+    "type": "library",
+    "description": "An easy to use MVC Framework",
+    "keywords": ["mvc","framework"],
+    "homepage": "http://sodapop.restlessdev.com",
+    "license": "GPLv2",
+    "authors": [
+        {
+            "name": "Mike Arace",
+            "email": "mike-composer@restlessdev.com",
+            "homepage": "http://restlessdev.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    }
+}
