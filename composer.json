@@ -1,6 +1,7 @@
 {
     "name": "restlessdev/sodapop",
     "type": "library",
+    "version":"0.9.0",
     "description": "An easy to use MVC Framework",
     "keywords": ["mvc","framework"],
     "homepage": "http://sodapop.restlessdev.com",
