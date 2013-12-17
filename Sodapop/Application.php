@@ -63,40 +63,41 @@ class Sodapop_Application {
             $this->initialize();
         }
 	// if there is a theme, check that the requested file isn't in the theme's root
-	if (substr($_SERVER['REQUEST_URI'], -1) != '/' && file_exists($this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
-	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'])) {
+        $cleanedUrl = strpos($_SERVER['REQUEST_URI'], '?') !== false ? substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
+	if (substr($cleanedUrl, -1) != '/' && file_exists($this->getThemeRoot().'www'.$cleanedUrl)) {
+	    if (getenv('USE_CACHE') != 'false' && function_exists('apc_exists') && apc_exists('filec_'.$this->getThemeRoot().'www'.$cleanedUrl)) {
                 ob_start("ob_gzhandler"); 
-                header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$cleanedUrl));
+                header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$cleanedUrl));
                 header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
                 header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', time()));
                 header('Pragma: cache');
                 header('Cache-Control: public');
                 
-                echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$cleanedUrl));
                 ob_flush();
                 exit;
             } else {
                 if (getenv('USE_CACHE') != 'false' && function_exists('apc_store')) {
-                    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
+                    $name = $this->getThemeRoot().'www'.$cleanedUrl;
                     $output = file_get_contents($name);
                     apc_store('filet_'.$name, determine_mime_type($name));
                     apc_store('files_'.$name, filesize($name));
                     apc_store('filec_'.$name, $output);
                     ob_start("ob_gzhandler"); 
-                    header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
-                    header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                    header("Content-Type: ".apc_fetch('filet_'.$this->getThemeRoot().'www'.$cleanedUrl));
+                    header("Content-Length: " . apc_fetch('files_'.$this->getThemeRoot().'www'.$cleanedUrl));
                     header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 604800));
                     header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', time()));
                     header('Pragma: cache');
                     header('Cache-Control: public');
                     
-                    echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$_SERVER['REQUEST_URI']));
+                    echo(apc_fetch('filec_'.$this->getThemeRoot().'www'.$cleanedUrl));
                     ob_flush();
                     exit;
                 } else {
                     
-                    $name = $this->getThemeRoot().'www'.$_SERVER['REQUEST_URI'];
+                    $name = $this->getThemeRoot().'www'.$cleanedUrl;
                     $fp = fopen($name, 'rb');
                     ob_start("ob_gzhandler");
                     header("Content-Type: ".determine_mime_type($name));
