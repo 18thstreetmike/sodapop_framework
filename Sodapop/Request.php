@@ -30,7 +30,11 @@ class Sodapop_Request {
     public function __construct($additional_values = null) {
 	$this->method = strtolower($_SERVER['REQUEST_METHOD']);
 	foreach($_REQUEST as $key => $val) {
-	    $this->values[$key] = $val;
+            if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+                $this->values[$key] = urldecode($val);
+            } else {
+                $this->values[$key] = $val;
+            }
 	}
 	if (!is_null($additional_values) && is_array($additional_values)) {
 	    foreach($additional_values as $key => $val) {
