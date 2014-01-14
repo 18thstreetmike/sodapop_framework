@@ -65,7 +65,7 @@ class Sodapop_Application {
 	// if there is a theme, check that the requested file isn't in the theme's root
         $cleanedUrl = strpos($_SERVER['REQUEST_URI'], '?') !== false ? substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
 	// test if this is a request for theme assets. If so, attempt to create a symlink. If not, strip that part.
-        if (substr($cleanedUrl, 0, strlen('/'.$this->theme.'_assets/')) == '/'.$this->theme.'_assets/'){
+        if (!is_null($this->theme) && substr($cleanedUrl, 0, strlen('/'.$this->theme.'_assets/')) == '/'.$this->theme.'_assets/'){
             if (is_writable('.')) {
                 $command = 'ln -s '.$this->getThemeRoot().'www '.$this->theme.'_assets';
                 system(escapeshellcmd($command));
