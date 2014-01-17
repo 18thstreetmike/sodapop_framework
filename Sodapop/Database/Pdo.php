@@ -64,7 +64,11 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
 	    $stmt->bindValue(':'.$key, $value);
         }
         try {
-	    $stmt->execute();
+	    $ret = $stmt->execute();
+            if (!$ret) {
+                $error = $stmt->errorInfo();
+                throw new Exception($error[2]);
+            }
 	    return $this->resultsetToArray($stmt);
         } catch (Exception $e) {
             throw new Sodapop_Database_Exception($e->getMessage(), 3);
@@ -77,7 +81,11 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
 	    $stmt->bindValue(':'.$key, $value);
         }
         try {
-	    $stmt->execute();
+	    $ret = $stmt->execute();
+            if (!$ret) {
+                $error = $stmt->errorInfo();
+                throw new Exception($error[2]);
+            }
 	} catch (Exception $e) {
 	    throw new Sodapop_Database_Exception($e->getMessage(), 3);
         }
@@ -86,7 +94,11 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
     public function runQuery($query) {
         try {
 	    $stmt = $this->connection->prepare($query);
-	    $stmt->execute();
+	    $ret = $stmt->execute();
+            if (!$ret) {
+                $error = $stmt->errorInfo();
+                throw new Exception($error[2]);
+            }
 	    return $this->resultsetToArray($stmt);
         } catch (Exception $e) {
             throw new Sodapop_Database_Exception($e->getMessage(), 3);
@@ -96,7 +108,11 @@ class Sodapop_Database_Pdo extends Sodapop_Database_Abstract {
     public function runUpdate($statement) {
         try {
             $stmt = $this->connection->prepare($statement);
-	    $stmt->execute();
+	    $ret = $stmt->execute();
+            if (!$ret) {
+                $error = $stmt->errorInfo();
+                throw new Exception($error[2]);
+            }
         } catch (Exception $e) {
             throw new Sodapop_Database_Exception($e->getMessage(), 3);
         }

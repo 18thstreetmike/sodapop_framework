@@ -214,7 +214,7 @@ class Sodapop_Application {
             $controllerObj->cleanup();
             echo $output;
         } catch (Exception $e) {
-            loadControllerAction('index', '500', $request, $view, $baseUrl);
+            $this->loadControllerAction('index', '500', $request, $view, $baseUrl);
         }
         exit();
     }
