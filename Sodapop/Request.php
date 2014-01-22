@@ -145,6 +145,14 @@ class Sodapop_Request {
 	}
     }
     
+    public function validateCSRF() {
+        if ($this->exists('_csrf_token') && $this->values['_csrf_token'] == Sodapop_Session::get('_csrf_token')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /**
      * Returns the given request header
      * 

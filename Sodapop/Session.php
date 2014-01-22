@@ -78,4 +78,11 @@ class Sodapop_Session {
     public static function delete($key) {
 	unset($_SESSION[$key]);
     }
+    
+    /**
+     * Resets the CSRF token. Should be done whenever privileges change.
+     */
+    public static function refreshCSRFToken() {
+        Sodapop_Session::set('_csrf_token', md5(rand(0, 1000).time()));
+    }
 }

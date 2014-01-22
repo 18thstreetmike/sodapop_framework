@@ -85,4 +85,21 @@ abstract class Sodapop_View_Abstract {
      * This method is called within a view file to render a partial view.
      */
     public abstract function renderPartial($viewPath);
+    
+    /**
+     * Generates a csrf token.
+     * 
+     * @param boolean If true, returns just the token. If false show the hidden input.
+     * @return type
+     */
+    public function getCSRFToken($justToken = false) {
+        if (!Sodapop_Session::exists('_csrf_token')) {
+            Sodapop_Session::refreshCSRFToken();
+        }
+        if ($justToken) {
+            return Sodapop_Session::get('_csrf_token');
+        } else {
+            return '<input type="hidden" id="csrf-token" name="_csrf_token" value="'.Sodapop_Session::get('_csrf_token').'" />';
+        }
+    }
 }
