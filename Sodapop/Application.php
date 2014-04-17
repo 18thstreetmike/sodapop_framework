@@ -202,6 +202,7 @@ class Sodapop_Application {
 		$controllerObj->setLayoutPath('');
 	    }
             $controllerObj->view->baseUrl = $baseUrl;
+            $controllerObj->view->application = $this;
             if (!is_null($this->theme)) {
                 $controllerObj->view->themeAssetRoot = $baseUrl . $this->theme .'_assets/';
             } else {
