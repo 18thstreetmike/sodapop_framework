@@ -1,0 +1,39 @@
+#!/usr/bin/php
+<?php
+
+ini_set('memory_limit', '64M');
+error_reporting(E_ERROR);
+set_include_path(".:..:../../../sodapop_framework:../models:../library:../commands");
+
+require('Sodapop/Application.php');
+Sodapop_Application::getInstance()->initialize();
+Sodapop_Application::getInstance()->runCLI();
+
+if (count($argv) < 3) {
+  echo "\nUsage: sodarun <command_name> <method_name> [<arg1>, ...]\n\n";
+} else {
+  if (file_exists($argv[1])) {
+    require_once $argv[1];
+    $command = substr($argv[1], strrpos($argv[1], '/') + 1, strrpos($argv[1], '.') - strrpos($argv[1], '/') + 1);
+  } else {
+    $command = ucfirst($argv[1]).'Command';
+    if (file_exists(getcwd().'/'.$command.'.php')) {
+      require_once getcwd().'/'.$command.'.php';
+    } else if(file_exists(getcwd().'/commands/'.$command.'.php')) {
+      require_once getcwd().'/commands/'.$command.'.php';
+    }
+  }
+  if (!class_exists($command)) {
+    echo "\n".$command." not found!\n\n";
+  } 
+  $object = new $command;
+  if (!is_subclass_of($object, 'Sodapop_Command')) {
+    echo "\n".$command." is not a valid Sodapop command!\n\n";
+  } else {
+    if(!method_exists($object, $argv[2].'Action')) {
+      echo "\n".$command."::".$argv[2].'Action'." not found!\n\n";
+    } else {
+      call_user_method($argv[2].'Action', $object, count($argv) > 3 ? array_slice($argv, 3) : null);
+    }
+  }
+}
