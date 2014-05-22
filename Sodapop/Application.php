@@ -143,6 +143,25 @@ class Sodapop_Application {
     }
     
     /**
+     * This method is called after the application is initialized on the CLI. This happens within
+     * the application's index.php file in its www directory.
+     */
+    public function runCLI() {
+        if (!$this->initialized) {
+            $this->initialize();
+        }
+	
+	// connect to the database
+	if (isset($this->config['db_name'])) {
+	    $db_config = array();
+	    if (isset($this->config['db_config'])) {
+		$db_config = $this->config['db_config'];
+	    }
+	    $this->connectToDatabase('default', $this->config['db_driver'], $this->config['db_host'], $this->config['db_port'], $this->config['db_user'], $this->config['db_password'], $this->config['db_name'], $db_config);
+	}
+    }
+    
+    /**
      * This method can be called to clear the cache if APC is in use. It should
      * be used if any database tables have changed their definitions.
      */
@@ -445,7 +464,7 @@ class Sodapop_Application {
 		$this->theme = $this->config['theme'];
 	    }
 	} else {
-	    if (!$config_file_text = file_get_contents("../conf/sodapop.json")) {
+            if (!$config_file_text = file_get_contents("../conf/sodapop.json")) {
 		exit('Error: Config file not found.');
 	    }
 	    if (trim($config_file_text) != '') {
@@ -590,18 +609,18 @@ class Sodapop_Application {
  * @param string $className
  */
 function sodapop_autoloader($className) {
-        // print "autoloading $className\n";
+    // print "autoloading $className\n";
     $application = Sodapop_Application::getInstance();
     $classNameParts = explode('_', $className);
     include_once(implode('/', $classNameParts) . '.php');
     include_once($className . '.php');
     if (!class_exists($className)) {
-	// start looking for models in the application's table list
+        // start looking for models in the application's table list
 	$modelName = (substr($className, 0, 14) == 'Sodapop_Model_' ? substr($className, 14) : $className);
 	try {
 	    $application->defineTableClass(Sodapop_Inflector::camelCapsToUnderscores($modelName, false), $className);
 	} catch(Exception $e) {
-	    // do nothing   
+	    // var_dump($e); die;
 	}
     }
 }
