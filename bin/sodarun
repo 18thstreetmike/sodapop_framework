@@ -1,10 +1,12 @@
 <?php
+// #!/usr/bin/php -d display_errors
 
 ini_set('memory_limit', '64M');
 error_reporting(E_ERROR);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-set_include_path(".:..:../../sodapop_framework:../models:../library:../commands");
+$include_path = get_include_path();
+set_include_path(($include_path == '' ? '' : $include_path.':').".:..:../../sodapop_framework:../models:../library:../commands");
 
 require('Sodapop/Application.php');
 Sodapop_Application::getInstance()->initialize();

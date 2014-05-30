@@ -464,7 +464,7 @@ class Sodapop_Application {
 		$this->theme = $this->config['theme'];
 	    }
 	} else {
-            if (!$config_file_text = file_get_contents("../conf/sodapop.json")) {
+            if (!$config_file_text = file_get_contents("../conf/sodapop.json", FILE_USE_INCLUDE_PATH)) {
 		exit('Error: Config file not found.');
 	    }
 	    if (trim($config_file_text) != '') {
