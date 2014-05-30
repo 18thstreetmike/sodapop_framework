@@ -150,8 +150,8 @@ class Sodapop_Application {
         if (!$this->initialized) {
             $this->initialize();
         }
-	
-	// connect to the database
+        
+        // connect to the database
 	if (isset($this->config['db_name'])) {
 	    $db_config = array();
 	    if (isset($this->config['db_config'])) {
@@ -477,7 +477,7 @@ class Sodapop_Application {
 	    if (isset($config['default'])) {
 		$this->config = $config['default'];
 	    }
-	    if (isset($config['hosts']) && isset($config['hosts'][strtolower($_SERVER['SERVER_NAME'])])) {
+	    if (isset($config['hosts']) && isset($_SERVER['SERVER_NAME']) && isset($config['hosts'][strtolower($_SERVER['SERVER_NAME'])])) {
 		foreach ($config['hosts'][strtolower($_SERVER['SERVER_NAME'])] as $key => $value) {
 		    $this->config[$key] = $value;
 		}
