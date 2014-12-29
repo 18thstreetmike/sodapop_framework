@@ -29,6 +29,8 @@ abstract class Sodapop_View_Abstract {
     protected $fields = array();
 
     protected $config = array();
+    
+    protected $application = null;
 
     protected $layoutFile = null;
 
@@ -55,6 +57,8 @@ abstract class Sodapop_View_Abstract {
 	    $this->layoutFile = $value;
 	} else if ($name == 'viewContent') {
 	    $this->viewContent = $value;
+	} else if ($name == 'application') {
+	    $this->application = $value;
 	} else {
 	    $this->fields[$name] = $value;
 	}
