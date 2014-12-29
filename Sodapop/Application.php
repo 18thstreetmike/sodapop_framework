@@ -267,6 +267,17 @@ class Sodapop_Application {
     }
     
     /**
+     * Sets an item from the config
+     * 
+     * @param string $key
+     * @param string $value
+     * @return mixed
+     */
+    public function setConfig($key, $value) {
+        return $this->config[$key] = $value;
+    }
+    
+    /**
      * Returns the requested database connection.
      * 
      * @param string $connection_identifier
