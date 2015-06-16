@@ -33,10 +33,11 @@ if (count($argv) < 3) {
   if (!is_subclass_of($object, 'Sodapop_Command')) {
     echo "\n".$command." is not a valid Sodapop command!\n\n";
   } else {
-    if(!method_exists($object, $argv[2].'Action')) {
-      echo "\n".$command."::".$argv[2].'Action'." not found!\n\n";
+    if(!method_exists($object, 'action'.ucfirst($argv[2]))) {
+      echo "\n".$command."::".'action'.ucfirst($argv[2])." not found!\n\n";
     } else {
-      call_user_method($argv[2].'Action', $object, count($argv) > 3 ? array_slice($argv, 3) : null);
+      echo "\n".$command."::".'action'.ucfirst($argv[2])." executing...\n";
+      call_user_method('action'.ucfirst($argv[2]), $object, count($argv) > 3 ? array_slice($argv, 3) : null);
     }
   }
 }
